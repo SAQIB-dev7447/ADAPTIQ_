@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-5 overflow-hidden">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0 animate-fade-in">
+                <h6 class="text-primary fw-bold text-uppercase mb-3" style="letter-spacing: 2px;">Adaptive AI Learning
+                </h6>
+                <h1 class="display-3 fw-bold mb-4">Learn in the format your brain prefers</h1>
+                <p class="lead text-muted mb-5">AdaptIQ transforms educational content into structured formats based on
+                    your cognitive preferences using advanced AI synchronization.</p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary px-5 py-3 rounded-pill fs-5">Start
+                        Adapting</a>
+                    <a href="{{ url_for('dashboard') }}"
+                        class="btn btn-outline-secondary px-5 py-3 rounded-pill fs-5">View Demo</a>
+                </div>
+            </div>
+            <div class="col-lg-6 position-relative animate-fade-in">
+                <div class="hero-image-container">
+                    <img src="{{ url_for('static', filename='img/index.png') }}" class="img-fluid rounded-4 shadow-lg"
+                        alt="AdaptIQ Preview">
+                    <div class="floating-badge bg-white p-3 rounded-3 shadow-sm position-absolute"
+                        style="bottom: -20px; left: -20px; max-width: 200px; border-left: 4px solid #10b981;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-bolt text-success me-2"></i>
+                            <div>
+                                <div class="fw-bold small">85% Faster</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">Increased information retention
+                                    through AI-restructuring.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Learning Modes Section -->
+<section id="how-it-works" class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Choose Your Learning Mode</h2>
+            <p class="text-muted lead">Our AI adapts your materials instantly. Pick the interface that matches how you
+                process information best.</p>
+        </div>
+        <div class="row g-4">
+            <!-- Read-Easy Mode -->
+            <div class="col-md-4">
+                <div class="card h-100 p-4">
+                    <div class="mode-icon mode-read-easy">
+                        <i class="fas fa-book-reader"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Read-Easy Mode</h3>
+                    <p class="text-muted mb-4">Optimized for rapid reading with adjustable spacing, typography, and
+                        highlighted key concepts for better comprehension.</p>
+                    <a href="{{ url_for('read_easy') }}" class="btn btn-light rounded-pill w-100 mt-auto">Try This Mode
+                        <i class="fas fa-arrow-right ms-2"></i></a>
+                </div>
+            </div>
+            <!-- Focus Mode -->
+            <div class="col-md-4">
+                <div class="card h-100 p-4">
+                    <div class="mode-icon mode-focus">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Focus Mode</h3>
+                    <p class="text-muted mb-4">Minimalist layout designed for deep concentration. Strips away all
+                        distractions to keep you focused on one idea at a time.</p>
+                    <a href="{{ url_for('focus') }}" class="btn btn-light rounded-pill w-100 mt-auto">Try This Mode <i
+                            class="fas fa-arrow-right ms-2"></i></a>
+                </div>
+            </div>
+            <!-- Step-by-Step Mode -->
+            <div class="col-md-4">
+                <div class="card h-100 p-4">
+                    <div class="mode-icon mode-step">
+                        <i class="fas fa-list-ol"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Step-by-Step Mode</h3>
+                    <p class="text-muted mb-4">Logical sequences broken down into manageable chunks. Perfect for
+                        technical subjects and complex procedures.</p>
+                    <a href="{{ url_for('step_by_step') }}" class="btn btn-light rounded-pill w-100 mt-auto">Try This
+                        Mode <i class="fas fa-arrow-right ms-2"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Built for the Modern Mind</h2>
+            <p class="text-muted lead">Premium technology built for efficient, personalized learning.</p>
+        </div>
+        <div class="row g-4 text-start">
+            <div class="col-md-4">
+                <div class="p-4 rounded-4 bg-white shadow-sm h-100">
+                    <div class="icon-box text-primary fs-3 mb-3"><i class="fas fa-sync"></i></div>
+                    <h4 class="fw-bold mb-2">Cognitive Sync</h4>
+                    <p class="text-muted">Automatically detects your reading speed and comprehension patterns to adjust
+                        the flow.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 rounded-4 bg-white shadow-sm h-100">
+                    <div class="icon-box text-primary fs-3 mb-3"><i class="fas fa-wand-magic-sparkles"></i></div>
+                    <h4 class="fw-bold mb-2">AI Formatting</h4>
+                    <p class="text-muted">Instantly transform PDFs, articles, or notes into your preferred cognitive
+                        structure.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 rounded-4 bg-white shadow-sm h-100">
+                    <div class="icon-box text-primary fs-3 mb-3"><i class="fas fa-brain"></i></div>
+                    <h4 class="fw-bold mb-2">Smart Summaries</h4>
+                    <p class="text-muted">AI-generated summaries that focus on what matters most for your specific
+                        goals.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Section -->
+<section id="pricing" class="py-5 bg-light">
+    <div class="container py-5 text-center">
+        <h2 class="display-5 fw-bold mb-3">Simple Pricing</h2>
+        <p class="text-muted lead mb-5">Choose the plan that's right for your learning journey.</p>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4">
+                <div class="card p-4 border-0 shadow-sm h-100">
+                    <h4 class="fw-bold">Free</h4>
+                    <div class="display-6 fw-bold my-3">$0</div>
+                    <ul class="list-unstyled text-muted mb-4">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> 5 Adaptions / Month</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Standard Modes</li>
+                        <li><i class="fas fa-times text-danger me-2"></i> No AI Diagrams</li>
+                    </ul>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary rounded-pill mt-auto">Get
+                        Started</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4 border border-primary shadow-lg h-100 position-relative">
+                    <span class="badge bg-primary position-absolute top-0 start-50 translate-middle">MOST POPULAR</span>
+                    <h4 class="fw-bold mt-2">Pro Adaptor</h4>
+                    <div class="display-6 fw-bold my-3">$12 <span class="fs-6 text-muted">/mo</span></div>
+                    <ul class="list-unstyled text-muted mb-4">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Unlimited Adaptions</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> All Cognitive Modes</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i> AI Mermaid Diagrams</li>
+                        <li><i class="fas fa-check text-success me-2"></i> Priority Model Access</li>
+                    </ul>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary rounded-pill mt-auto">Upgrade Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="cta-banner rounded-5 p-5 text-center text-white" style="background: var(--primary-gradient);">
+            <h2 class="display-4 fw-bold mb-4">Ready to unlock your learning potential?</h2>
+            <p class="fs-5 mb-5 opacity-75">Join 50,000+ students and professionals who are learning faster and smarter
+                with AdaptIQ.</p>
+            <a href="{{ url_for('dashboard') }}"
+                class="btn btn-white bg-white text-primary px-5 py-3 rounded-pill fs-5 fw-bold">Create Free Account</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

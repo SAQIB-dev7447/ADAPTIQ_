@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <div class="header mb-4">
+            <h1 class="fw-bold h2">Content Transformation</h1>
+            <p class="text-muted">Paste your educational material below to instantly adapt it into formats tailored for
+                visual, auditory, or kinesthetic cognitive styles.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Input Card -->
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm border-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-file-alt me-2"></i>Original Content Input
+                        </h5>
+                        <div class="actions">
+                            <button class="btn btn-sm btn-light text-primary me-2"><i class="fas fa-upload me-1"></i>
+                                Upload File</button>
+                            <button class="btn btn-sm btn-light text-primary"><i class="fas fa-link me-1"></i>
+                                URL</button>
+                        </div>
+                    </div>
+                    <form action="{{ url_for('adapt') }}" method="POST">
+                        <textarea name="content" class="input-box mb-4"
+                            placeholder="Paste your lecture notes, textbook chapters, or research articles here to begin the transformation process..."
+                            required></textarea>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small" id="char-count">0 / 5,000 CHARACTERS</span>
+                            <button type="reset"
+                                class="btn btn-link btn-sm text-muted text-decoration-none">Clear</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill mt-4 fs-5 fw-bold">
+                            <i class="fas fa-magic me-2"></i> Adapt Content
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Output Preview Card -->
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm border-0 p-4 bg-white">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0 text-success"><i class="fas fa-check-circle me-2"></i>Adapted Output
+                            Preview</h5>
+                        <div class="actions">
+                            <button class="btn btn-sm btn-light"><i class="fas fa-download"></i></button>
+                            <button class="btn btn-sm btn-light ms-2"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column align-items-center justify-content-center text-center py-5 h-100">
+                        <div class="mb-4 bg-light p-4 rounded-circle">
+                            <i class="fas fa-brain fs-1 opacity-25"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">Ready for Transformation</h4>
+                        <p class="text-muted px-5">Your content will be processed using Llama3 8B. It will generate
+                            three cognitive modes and a visual diagram instantly.</p>
+                    </div>
+
+                    <!-- Bottom Nav for Modes -->
+                    <div class="mt-auto border-top pt-3">
+                        <div class="text-center mb-3 small fw-bold text-muted text-uppercase"
+                            style="letter-spacing: 1px;">Preview Modes</div>
+                        <div class="d-flex justify-content-around">
+                            <div class="text-center text-muted p-2">
+                                <i class="fas fa-book-reader d-block mb-1 fs-4 opacity-50"></i>
+                                <span class="small fw-medium">READ-EASY</span>
+                            </div>
+                            <div class="text-center text-muted p-2">
+                                <i class="fas fa-bullseye d-block mb-1 fs-4 opacity-50"></i>
+                                <span class="small fw-medium">FOCUS</span>
+                            </div>
+                            <div class="text-center text-muted p-2">
+                                <i class="fas fa-list-ol d-block mb-1 fs-4 opacity-50"></i>
+                                <span class="small fw-medium">STEP-BY-STEP</span>
+                            </div>
+                            <div class="text-center text-muted p-2">
+                                <i class="fas fa-headphones d-block mb-1 fs-4 opacity-50"></i>
+                                <span class="small fw-medium">AUDIO</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
