@@ -1,37 +1,30 @@
-async function loadStepMode(content) {
-    const list = document.getElementById('step-list');
+/**
+ * step_mode.js — Renders StepByStepOutput schema:
+ * { steps: [{ number, title, explanation }], closing: string }
+ */
+function renderStepByStep(data) {
+    const panel = document.getElementById('panel-step_by_step');
+    if (!panel) return;
 
-    try {
-        const response = await fetch('/api/generate/step_mode', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: content })
-        });
-
-        const data = await response.json();
-        const steps = data.steps || [];
-
-        list.innerHTML = steps.map((s, i) => `
-            <div class="card shadow-sm border-0 mb-4 p-4 rounded-4 transition-all hover-lift">
-                <div class="d-flex align-items-center mb-3">
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 32px; height: 32px;">${i + 1}</div>
-                    <h5 class="fw-bold mb-0">${s.title}</h5>
-                </div>
-                <div class="text-secondary ms-5">
-                    <p class="mb-3">${s.explanation}</p>
-                    ${s.plain_english_formula ? `
-                        <div class="bg-light p-3 rounded-3 small">
-                            <span class="fw-bold text-muted">Plain English:</span> ${s.plain_english_formula}
-                        </div>
-                    ` : ''}
-                </div>
+    const steps = (data.steps || []).map(s => `
+        <div class="d-flex align-items-start mb-4">
+            <div class="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 me-3"
+                 style="width:40px;height:40px;font-size:1rem;">${s.number}</div>
+            <div class="flex-grow-1">
+                <h6 class="fw-bold mb-1">${s.title}</h6>
+                <p class="text-muted mb-0 lh-lg">${s.explanation}</p>
             </div>
-        `).join('');
+        </div>`).join('');
 
-    } catch (error) {
-        console.error("Step Mode Error:", error);
-        list.innerHTML = `<div class="alert alert-danger">Failed to load step-by-step mode.</div>`;
-    }
+    panel.innerHTML = `
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            <h4 class="fw-bold mb-4"><i class="fas fa-list-ol text-primary me-2"></i>Step by Step</h4>
+            <div class="steps-list">${steps}</div>
+            ${data.closing ? `
+            <div class="alert alert-success border-0 mt-3 rounded-3">
+                <i class="fas fa-flag-checkered me-2"></i>${data.closing}
+            </div>` : ''}
+        </div>`;
 }
 
-window.loadStepMode = loadStepMode;
+window.renderStepByStep = renderStepByStep;

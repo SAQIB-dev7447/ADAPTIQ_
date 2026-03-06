@@ -1,18 +1,5 @@
-<div id="quiz-container" class="animate-fade-in">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Knowledge Check</h2>
-        <div id="quiz-badge" class="badge bg-secondary px-3 py-2 rounded-pill">0/5 Score</div>
-    </div>
-
-    <div id="quiz-content" class="quiz-questions">
-        <!-- Questions will be injected here -->
-        <p class="text-muted p-4 border rounded-4 bg-light">Ready to test your knowledge? Generate the quiz to begin.
-        </p>
-    </div>
-
-    <div id="quiz-results" class="mt-4 text-center d-none">
-        <h4 class="fw-bold">Your Results</h4>
-        <div class="display-4 fw-bold text-primary mb-3" id="final-score">0%</div>
-        <button onclick="resetQuiz()" class="btn btn-outline-primary rounded-pill px-4">Retry Quiz</button>
-    </div>
+<!-- quiz.html — render target only; JS fills via renderQuiz(data) -->
+<div id="quiz-placeholder" class="text-center py-5 text-muted">
+    <i class="fas fa-question-circle fa-2x mb-3 d-block text-primary opacity-50"></i>
+    Click <strong>Quiz</strong> above to generate 3 multiple-choice questions.
 </div>

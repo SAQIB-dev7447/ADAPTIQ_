@@ -1,29 +1,46 @@
-async function loadMindMap(content) {
-    const root = document.getElementById('mermaid-root');
+/**
+ * mind_map.js — Renders MindMapOutput schema:
+ * { mermaid: string, fallback_used: bool }
+ * Uses Mermaid.js v10 (loaded in dashboard.html).
+ */
+function renderMindMap(data) {
+    const panel = document.getElementById('panel-mind_map');
+    if (!panel) return;
 
-    try {
-        const response = await fetch('/api/generate/mind_map', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: content })
-        });
+    const mermaidCode = (data.mermaid || '').trim() || 'mindmap\n  root((No diagram))';
+    const isFallback = data.fallback_used === true;
 
-        const data = await response.json();
-        const code = data || "mindmap\n  root((No diagram generated))";
+    panel.innerHTML = `
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            <h4 class="fw-bold mb-3">
+                <i class="fas fa-project-diagram text-primary me-2"></i>Mind Map
+                ${isFallback ? '<small class="badge bg-warning text-dark ms-2">Fallback</small>' : ''}
+            </h4>
+            ${isFallback ? '<div class="alert alert-warning border-0 mb-3">A fallback diagram was used due to a generation issue.</div>' : ''}
+            <div class="mermaid-wrapper border rounded-4 bg-light p-3 overflow-auto">
+                <pre class="mermaid" id="mermaid-root" style="background:transparent;border:none;margin:0;">${mermaidCode}</pre>
+            </div>
+        </div>`;
 
-        // Mermaid rendering
-        root.removeAttribute('data-processed');
-        root.innerHTML = code;
-        if (window.mermaid) {
-            mermaid.run({
-                nodes: [root]
+    // Re-run Mermaid after injecting
+    if (window.mermaid) {
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+        const el = document.getElementById('mermaid-root');
+        if (el) {
+            el.removeAttribute('data-processed');
+            mermaid.run({ nodes: [el] }).catch(err => {
+                el.innerHTML = `<div class="alert alert-danger">Diagram render error: ${err.message}</div>`;
             });
         }
-
-    } catch (error) {
-        console.error("Mind Map Error:", error);
-        root.innerHTML = `<div class="alert alert-danger">Failed to render mind map.</div>`;
     }
 }
 
-window.loadMindMap = loadMindMap;
+function escapeHtml(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+window.renderMindMap = renderMindMap;
