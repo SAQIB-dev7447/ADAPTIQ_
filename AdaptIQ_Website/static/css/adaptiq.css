@@ -1,0 +1,124 @@
+body.dark-mode {
+  background-color: #0f172a !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .navbar {
+  background-color: #1e293b !important;
+}
+
+body.dark-mode .card {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .card-body {
+  background-color: #1e293b !important;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select,
+body.dark-mode textarea {
+  background-color: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #475569 !important;
+}
+
+body.dark-mode .nav-tabs .nav-link {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .nav-tabs .nav-link.active {
+  background-color: #1e293b !important;
+  color: #60a5fa !important;
+  border-color: #334155 #334155 #1e293b !important;
+}
+
+body.dark-mode .text-muted {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .alert-info {
+  background-color: #1e3a5f !important;
+  color: #bfdbfe !important;
+  border-color: #2563eb !important;
+}
+
+body.dark-mode .btn-outline-secondary {
+  color: #94a3b8 !important;
+  border-color: #475569 !important;
+}
+
+body.dark-mode .badge.bg-primary {
+  background-color: #2563eb !important;
+}
+
+/* Global Background & Border Overrides */
+body.dark-mode .bg-light,
+body.dark-mode .bg-white {
+  background-color: #1e293b !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .border-bottom,
+body.dark-mode .border,
+body.dark-mode hr {
+  border-color: #334155 !important;
+}
+
+body.dark-mode .shadow-sm {
+  box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .5) !important;
+}
+
+/* Navbar Specifics */
+body.dark-mode .navbar-brand span {
+  color: #f8fafc !important;
+}
+
+body.dark-mode .navbar-brand .logo-icon {
+  background-color: #1e3a8a !important;
+}
+
+body.dark-mode .navbar-brand .text-primary {
+  color: #93c5fd !important;
+}
+
+body.dark-mode .nav-link {
+  color: #cbd5e1 !important;
+}
+
+body.dark-mode .nav-link:hover {
+  color: #f8fafc !important;
+}
+
+/* Buttons */
+body.dark-mode .btn-light,
+body.dark-mode .btn-white {
+  background-color: #334155 !important;
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+}
+
+body.dark-mode .btn-light:hover,
+body.dark-mode .btn-white:hover {
+  background-color: #475569 !important;
+  color: #ffffff !important;
+}
+
+/* Layout Specifics */
+body.dark-mode .dashboard-container,
+body.dark-mode footer.bg-light,
+body.dark-mode section.bg-light {
+  background-color: #0f172a !important;
+}
+
+body.dark-mode .input-box {
+  background-color: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #475569 !important;
+}
+
+body.dark-mode .text-dark {
+  color: #e2e8f0 !important;
+}
