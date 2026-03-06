@@ -1,34 +1,24 @@
-async function loadReadEasy(content) {
-    const container = document.getElementById('read-easy-content');
-    const keywordsContainer = document.getElementById('read-easy-keywords');
+/**
+ * read_easy.js — Renders ReadEasyOutput schema:
+ * { intro: string, paragraphs: string[], summary_line: string }
+ */
+function renderReadEasy(data) {
+    const panel = document.getElementById('panel-read_easy');
+    if (!panel) return;
 
-    // Show loading state if needed
+    const paras = (data.paragraphs || []).map(p => `
+        <p class="mb-3 lh-lg">${p}</p>`).join('');
 
-    try {
-        const response = await fetch('/api/generate/read_easy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: content })
-        });
-
-        const data = await response.json();
-
-        // Render Title
-        document.getElementById('read-easy-title').innerText = data.title || "Adapted Reading";
-
-        // Render Paragraphs
-        container.innerHTML = data.paragraphs.map(p => `<p class="mb-4">${p}</p>`).join('');
-
-        // Render Keywords
-        keywordsContainer.innerHTML = data.key_terms.map(t =>
-            `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill">${t}</span>`
-        ).join('');
-
-    } catch (error) {
-        console.error("Read Easy Error:", error);
-        container.innerHTML = `<div class="alert alert-danger">Failed to load reading mode.</div>`;
-    }
+    panel.innerHTML = `
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            <h4 class="fw-bold mb-3"><i class="fas fa-book-open text-primary me-2"></i>Read Easy</h4>
+            <p class="lead text-muted fst-italic border-start border-primary border-3 ps-3 mb-4">${data.intro || ''}</p>
+            <div class="mb-4">${paras}</div>
+            ${data.summary_line ? `
+            <div class="alert alert-info border-0 rounded-3">
+                <i class="fas fa-lightbulb me-2"></i><strong>Takeaway:</strong> ${data.summary_line}
+            </div>` : ''}
+        </div>`;
 }
 
-// Export for use in dashboard.js
-window.loadReadEasy = loadReadEasy;
+window.renderReadEasy = renderReadEasy;

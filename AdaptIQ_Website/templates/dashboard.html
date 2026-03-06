@@ -1,106 +1,169 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container py-5">
-    <!-- Action Center -->
-    <div class="card shadow-sm border-0 rounded-4 p-5 mb-5 bg-white overflow-hidden">
-        <div class="row align-items-center">
-            <div class="col-lg-7">
-                <h1 class="fw-bold mb-3">Adaptive Dashboard</h1>
-                <p class="text-muted lead mb-4">Paste your complex material below. We'll verify it and unlock your
-                    custom learning journey.</p>
+<!-- Inject JWT token from Flask session safely -->
+<script>
+    const ACCESS_TOKEN = {{ access_token | tojson }};
+</script>
 
-                <div class="input-container border rounded-4 p-3 bg-light shadow-inner mb-4">
-                    <textarea id="raw-content" class="form-control border-0 bg-transparent" rows="5"
-                        placeholder="Enter content here..."></textarea>
+<div class="container py-5">
+
+    <!-- ── Upload / Action Center ── -->
+    <div class="card shadow-sm border-0 rounded-4 p-5 mb-5 bg-white">
+        <div class="row align-items-start">
+            <div class="col-lg-7">
+                <h1 class="fw-bold mb-2">Adaptive Dashboard</h1>
+                <p class="text-muted lead mb-4">Upload your content once. Every learning format is generated on demand
+                    and cached permanently.</p>
+
+                <!-- Input type selector -->
+                <ul class="nav nav-pills mb-3 gap-2" id="uploadTypeTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill px-3 py-1" id="tab-paste-btn" data-bs-toggle="pill"
+                            data-bs-target="#upload-paste" type="button">Paste Text</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-3 py-1" id="tab-url-btn" data-bs-toggle="pill"
+                            data-bs-target="#upload-url" type="button">URL</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-3 py-1" id="tab-pdf-btn" data-bs-toggle="pill"
+                            data-bs-target="#upload-pdf" type="button">PDF</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-3 py-1" id="tab-docx-btn" data-bs-toggle="pill"
+                            data-bs-target="#upload-docx" type="button">DOCX</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="uploadTypeContent">
+                    <!-- Paste -->
+                    <div class="tab-pane fade show active" id="upload-paste" role="tabpanel">
+                        <div class="border rounded-4 p-3 bg-light mb-3">
+                            <textarea id="paste-content" class="form-control border-0 bg-transparent" rows="5"
+                                placeholder="Paste your text here..."></textarea>
+                        </div>
+                    </div>
+                    <!-- URL -->
+                    <div class="tab-pane fade" id="upload-url" role="tabpanel">
+                        <div class="border rounded-4 p-3 bg-light mb-3">
+                            <input type="url" id="url-content" class="form-control border-0 bg-transparent"
+                                placeholder="https://example.com/article">
+                        </div>
+                    </div>
+                    <!-- PDF -->
+                    <div class="tab-pane fade" id="upload-pdf" role="tabpanel">
+                        <div class="border rounded-4 p-3 bg-light mb-3">
+                            <input type="file" id="pdf-file" class="form-control border-0 bg-transparent" accept=".pdf"
+                                capture="environment">
+                        </div>
+                    </div>
+                    <!-- DOCX -->
+                    <div class="tab-pane fade" id="upload-docx" role="tabpanel">
+                        <div class="border rounded-4 p-3 bg-light mb-3">
+                            <input type="file" id="docx-file" class="form-control border-0 bg-transparent"
+                                accept=".docx,.doc">
+                        </div>
+                    </div>
                 </div>
 
-                <button id="main-generate-btn" onclick="startAdaptation()"
-                    class="btn btn-primary btn-lg px-5 py-3 rounded-pill fw-bold shadow-lg transition-all hover-lift">
+                <!-- Source name (optional) -->
+                <input type="text" id="source-name" class="form-control mb-3" placeholder="Give it a name (optional)">
+
+                <!-- Upload button -->
+                <button id="upload-btn" onclick="startAdaptation()"
+                    class="btn btn-primary btn-lg px-5 py-3 rounded-pill fw-bold shadow-lg">
                     Unlock Learning Path <i class="fas fa-magic ms-2"></i>
                 </button>
+
+                <!-- Status messages -->
+                <div id="upload-status" class="mt-3 d-none">
+                    <div class="d-flex align-items-center gap-2 text-muted">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                        <span id="upload-status-text">Processing your content...</span>
+                    </div>
+                </div>
+                <div id="upload-error" class="alert alert-danger mt-3 d-none"></div>
             </div>
             <div class="col-lg-5 d-none d-lg-block">
                 <div class="p-4 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-10 text-center">
                     <div class="display-1 text-primary mb-3"><i class="fas fa-brain"></i></div>
-                    <h5 class="fw-bold">Ready to Adapt?</h5>
-                    <p class="small text-muted mb-0">Our AI identifies core concepts, splits them into modules, and
-                        prepares your interactive materials.</p>
+                    <h5 class="fw-bold">One Upload. Six Formats.</h5>
+                    <p class="small text-muted mb-0">Content is extracted once and cached permanently. Every tab is
+                        generated on your first click — never again.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modular Nav Tabs -->
-    <ul class="nav nav-pills nav-fill gap-2 mb-5 p-2 bg-light rounded-pill shadow-sm" id="pills-tab" role="tablist">
+    <!-- ── Modular Nav Tabs ── -->
+    <ul class="nav nav-pills nav-fill gap-2 mb-4 p-2 bg-light rounded-pill shadow-sm" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active rounded-pill fw-bold py-3 tab-locked" id="tab-summary" data-bs-toggle="pill"
-                data-bs-target="#panel-summary" type="button" disabled>
-                <span class="tab-status-icon"><i class="fas fa-lock me-2"></i></span> Summary
+                data-bs-target="#panel-summary" data-tab="summary" type="button" disabled
+                onclick="handleTabClick('summary')">
+                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Summary
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill fw-bold py-3 tab-locked" id="tab-read_easy" data-bs-toggle="pill"
-                data-bs-target="#panel-read_easy" type="button" disabled>
-                <span class="tab-status-icon"><i class="fas fa-lock me-2"></i></span> Read Easy
+                data-bs-target="#panel-read_easy" data-tab="read_easy" type="button" disabled
+                onclick="handleTabClick('read_easy')">
+                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Read Easy
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill fw-bold py-3 tab-locked" id="tab-focus_mode" data-bs-toggle="pill"
-                data-bs-target="#panel-focus_mode" type="button" disabled>
-                <span class="tab-status-icon"><i class="fas fa-lock me-2"></i></span> Focus Mode
+                data-bs-target="#panel-focus_mode" data-tab="focus_mode" type="button" disabled
+                onclick="handleTabClick('focus_mode')">
+                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Focus Mode
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill fw-bold py-3 tab-locked" id="tab-step_mode" data-bs-toggle="pill"
-                data-bs-target="#panel-step_mode" type="button" disabled>
-                <span class="tab-status-icon"><i class="fas fa-lock me-2"></i></span> Step Mode
+            <button class="nav-link rounded-pill fw-bold py-3 tab-locked" id="tab-step_by_step" data-bs-toggle="pill"
+                data-bs-target="#panel-step_by_step" data-tab="step_by_step" type="button" disabled
+                onclick="handleTabClick('step_by_step')">
+                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Step by Step
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill fw-bold py-3 tab-locked" id="tab-mind_map" data-bs-toggle="pill"
-                data-bs-target="#panel-mind_map" type="button" disabled>
-                <span class="tab-status-icon"><i class="fas fa-lock me-2"></i></span> Mind Map
+                data-bs-target="#panel-mind_map" data-tab="mind_map" type="button" disabled
+                onclick="handleTabClick('mind_map')">
+                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Mind Map
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill fw-bold py-3 tab-locked" id="tab-quiz" data-bs-toggle="pill"
-                data-bs-target="#panel-quiz" type="button" disabled>
-                <span class="tab-status-icon"><i class="fas fa-lock me-2"></i></span> Quiz
+                data-bs-target="#panel-quiz" data-tab="quiz" type="button" disabled onclick="handleTabClick('quiz')">
+                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Quiz
             </button>
         </li>
     </ul>
 
-    <!-- Tab Panels (Loading Container) -->
-    <div class="tab-content border-0 p-0" id="pills-tabContent">
-        <div class="tab-pane fade show active" id="panel-summary" role="tabpanel">
-            {% include 'summary.html' %}
-        </div>
-        <div class="tab-pane fade" id="panel-read_easy" role="tabpanel">
-            {% include 'read_easy.html' %}
-        </div>
-        <div class="tab-pane fade" id="panel-focus_mode" role="tabpanel">
-            {% include 'focus_mode.html' %}
-        </div>
-        <div class="tab-pane fade" id="panel-step_mode" role="tabpanel">
-            {% include 'step_mode.html' %}
-        </div>
-        <div class="tab-pane fade" id="panel-mind_map" role="tabpanel">
-            {% include 'mind_map.html' %}
-        </div>
-        <div class="tab-pane fade" id="panel-quiz" role="tabpanel">
-            {% include 'quiz.html' %}
-        </div>
+    <!-- ── Tab Panels ── -->
+    <div class="tab-content" id="pills-tabContent">
+        <div class="tab-pane fade show active p-0" id="panel-summary" role="tabpanel">{% include 'summary.html' %}</div>
+        <div class="tab-pane fade p-0" id="panel-read_easy" role="tabpanel">{% include 'read_easy.html' %}</div>
+        <div class="tab-pane fade p-0" id="panel-focus_mode" role="tabpanel">{% include 'focus_mode.html' %}</div>
+        <div class="tab-pane fade p-0" id="panel-step_by_step" role="tabpanel">{% include 'step_mode.html' %}</div>
+        <div class="tab-pane fade p-0" id="panel-mind_map" role="tabpanel">{% include 'mind_map.html' %}</div>
+        <div class="tab-pane fade p-0" id="panel-quiz" role="tabpanel">{% include 'quiz.html' %}</div>
     </div>
+
 </div>
 
-<!-- Load Feature Scripts -->
+<!-- Mermaid for mind map rendering -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+<!-- Load tab render scripts -->
 <script src="{{ url_for('static', filename='js/summary.js') }}"></script>
 <script src="{{ url_for('static', filename='js/read_easy.js') }}"></script>
 <script src="{{ url_for('static', filename='js/focus_mode.js') }}"></script>
 <script src="{{ url_for('static', filename='js/step_mode.js') }}"></script>
 <script src="{{ url_for('static', filename='js/mind_map.js') }}"></script>
 <script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+<!-- Main dashboard orchestration (must load last) -->
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
 <style>
@@ -114,12 +177,17 @@
     }
 
     .tab-locked {
-        opacity: 0.6;
+        opacity: 0.55;
         cursor: not-allowed !important;
     }
 
-    .shadow-inner {
-        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+    .tab-unlocked {
+        opacity: 1;
+        cursor: pointer !important;
+    }
+
+    .tab-done .tab-icon i {
+        color: #28a745;
     }
 </style>
 {% endblock %}
