@@ -40,8 +40,13 @@
                             href="{{ url_for('index', _anchor='pricing') }}">Pricing</a></li>
                     <li class="nav-item ms-lg-3"><a class="btn btn-primary px-4 rounded-pill"
                             href="{{ url_for('dashboard') }}">Get Started</a></li>
-                    <li class="nav-item ms-lg-2"><a class="btn btn-light px-4 rounded-pill" href="javascript:void(0)"
-                            onclick="alert('Login functionality coming soon!')">Login</a></li>
+                    {% if session.get('user_id') %}
+                    <li class="nav-item ms-lg-2"><a class="btn btn-outline-danger px-4 rounded-pill"
+                            href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                    <li class="nav-item ms-lg-2"><a class="btn btn-light px-4 rounded-pill"
+                            href="{{ url_for('login') }}">Login</a></li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
