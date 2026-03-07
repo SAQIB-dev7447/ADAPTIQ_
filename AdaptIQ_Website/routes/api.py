@@ -247,3 +247,94 @@ def get_sessions():
     
     return jsonify(r.json()), 200
 
+
+# ── ROUTE 5: SUMMARY AUDIO ────────────────────────────────────────────────────
+
+@api.route("/api/audio/summary", methods=["POST"])
+def generate_audio_summary():
+    user_id = _get_user_id()
+    if not user_id:
+        return jsonify({"error": "Unauthorised"}), 401
+
+    body = request.get_json()
+    session_id = body.get("session_id") if body else None
+    if not session_id:
+        return jsonify({"error": "session_id required"}), 400
+
+    # Fetch session
+    row = db_select_one("sessions", {"id": session_id, "user_id": user_id})
+    if not row:
+        return jsonify({"error": "Session not found"}), 404
+
+    # Check summary exists — audio requires summary to be generated first
+    if not row.get("summary"):
+        return jsonify({"error": "Generate Summary first before creating audio"}), 400
+
+    # Cache hit — audio already generated
+    if row.get("summary_audio_url"):
+        return jsonify({"audio_url": row["summary_audio_url"], "cached": True}), 200
+
+    # Generate audio from cached summary data
+    try:
+        from services.ai import generate_summary_audio
+        audio_bytes = generate_summary_audio(row["summary"])
+    except Exception as e:
+        return jsonify({"error": f"Audio generation failed: {str(e)}"}), 500
+
+    # Upload to Supabase Storage
+    try:
+        import supabase_client
+        filename = f"summary_{session_id}.mp3"
+        audio_url = supabase_client.upload_audio(audio_bytes, filename)
+    except Exception as e:
+        return jsonify({"error": f"Audio upload failed: {str(e)}"}), 500
+
+    # Save URL to session
+    db_update("sessions", {"id": session_id}, {"summary_audio_url": audio_url})
+
+    return jsonify({"audio_url": audio_url, "cached": False}), 200
+
+
+# ── ROUTE 6: READ EASY AUDIO ──────────────────────────────────────────────────
+
+@api.route("/api/audio/read-easy", methods=["POST"])
+def generate_audio_read_easy():
+    user_id = _get_user_id()
+    if not user_id:
+        return jsonify({"error": "Unauthorised"}), 401
+
+    body = request.get_json()
+    session_id = body.get("session_id") if body else None
+    if not session_id:
+        return jsonify({"error": "session_id required"}), 400
+
+    row = db_select_one("sessions", {"id": session_id, "user_id": user_id})
+    if not row:
+        return jsonify({"error": "Session not found"}), 404
+
+    if not row.get("read_easy"):
+        return jsonify({"error": "Generate Read Easy first before creating audio"}), 400
+
+    # Cache hit
+    if row.get("read_easy_audio_url"):
+        return jsonify({"audio_url": row["read_easy_audio_url"], "cached": True}), 200
+
+    # Generate
+    try:
+        from services.ai import generate_read_easy_audio
+        audio_bytes = generate_read_easy_audio(row["read_easy"])
+    except Exception as e:
+        return jsonify({"error": f"Audio generation failed: {str(e)}"}), 500
+
+    # Upload to Supabase Storage
+    try:
+        import supabase_client
+        filename = f"read_easy_{session_id}.mp3"
+        audio_url = supabase_client.upload_audio(audio_bytes, filename)
+    except Exception as e:
+        return jsonify({"error": f"Audio upload failed: {str(e)}"}), 500
+
+    # Save URL to session
+    db_update("sessions", {"id": session_id}, {"read_easy_audio_url": audio_url})
+
+    return jsonify({"audio_url": audio_url, "cached": False}), 200
