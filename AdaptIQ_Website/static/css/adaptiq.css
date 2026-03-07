@@ -20,9 +20,15 @@ body.dark-mode .card-body {
 body.dark-mode .form-control,
 body.dark-mode .form-select,
 body.dark-mode textarea {
-  background-color: #1e293b !important;
+  background-color: #0f172a !important;
   color: #e2e8f0 !important;
-  border-color: #475569 !important;
+  border: 1px solid #475569 !important;
+}
+
+body.dark-mode .form-control::placeholder,
+body.dark-mode textarea::placeholder {
+  color: #64748b !important;
+  opacity: 1;
 }
 
 body.dark-mode .nav-tabs .nav-link {
@@ -121,4 +127,70 @@ body.dark-mode .input-box {
 
 body.dark-mode .text-dark {
   color: #e2e8f0 !important;
+}
+
+/* Feature Cards */
+.feature-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.dark-mode .feature-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode .bg-light {
+  background-color: #1e293b !important;
+}
+
+/* Restore Softer Gradient on Buttons & Pills */
+.btn-primary {
+  background: var(--primary-gradient) !important;
+  border: none !important;
+  color: #fff !important;
+}
+
+.nav-pills .nav-link.active {
+  background: var(--primary-gradient) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(36, 99, 235, 0.3) !important;
+}
+
+/* Override for Dark Mode Form Controls */
+body.dark-mode .nav-pills .nav-link.active {
+  background: #1e3a8a !important;
+  box-shadow: none !important;
+}
+
+/* List Groups */
+body.dark-mode .list-group-item {
+  background-color: transparent !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+/* AI Detection dark mode */
+body.dark-mode .bg-success.bg-opacity-10 {
+  background-color: rgba(5, 150, 105, 0.15) !important;
+}
+
+body.dark-mode .bg-danger.bg-opacity-10 {
+  background-color: rgba(220, 38, 38, 0.15) !important;
+}
+
+body.dark-mode .border-danger {
+  border-color: #dc2626 !important;
+}
+
+body.dark-mode .border-warning {
+  border-color: #d97706 !important;
+}
+
+body.dark-mode .border-success {
+  border-color: #059669 !important;
 }

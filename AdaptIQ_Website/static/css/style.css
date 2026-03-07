@@ -1,6 +1,6 @@
 :root {
-    --primary-color: #2463eb;
-    --primary-gradient: linear-gradient(135deg, #2463eb 0%, #1e4bb5 100%);
+    --primary-color: #3b82f6;
+    --primary-gradient: linear-gradient(140deg, #3b82f6 0%, #2563eb 100%);
     --bg-light: #f8fafc;
     --text-dark: #1e293b;
     --text-muted: #64748b;
@@ -16,11 +16,19 @@ body {
     background-color: white;
 }
 
-h1, h2, h3, h4, h5, .navbar-brand {
+h1,
+h2,
+h3,
+h4,
+h5,
+.navbar-brand {
     font-family: 'Outfit', sans-serif;
 }
 
-.text-primary { color: var(--primary-color) !important; }
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
 .btn-primary {
     background: var(--primary-gradient);
     border: none;
@@ -72,8 +80,15 @@ h1, h2, h3, h4, h5, .navbar-brand {
 
 /* Animations */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .animate-fade-in {
@@ -92,9 +107,20 @@ h1, h2, h3, h4, h5, .navbar-brand {
     font-size: 1.5rem;
 }
 
-.mode-read-easy { background: #eff6ff; color: #2563eb; }
-.mode-focus { background: #faf5ff; color: #9333ea; }
-.mode-step { background: #f0fdf4; color: #16a34a; }
+.mode-read-easy {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.mode-focus {
+    background: #faf5ff;
+    color: #9333ea;
+}
+
+.mode-step {
+    background: #f0fdf4;
+    color: #16a34a;
+}
 
 /* Dashboard Styles */
 .dashboard-container {

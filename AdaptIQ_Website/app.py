@@ -80,5 +80,47 @@ def dashboard():
     return render_template('dashboard.html', access_token=session.get('access_token', ''))
 
 
+@app.route("/feature/summary")
+def feature_summary():
+    return render_template("features/summary.html")
+
+@app.route("/feature/read-easy")
+def feature_read_easy():
+    return render_template("features/read_easy.html")
+
+@app.route("/feature/focus-mode")
+def feature_focus_mode():
+    return render_template("features/focus_mode.html")
+
+@app.route("/feature/step-by-step")
+def feature_step_by_step():
+    return render_template("features/step_by_step.html")
+
+@app.route("/feature/mind-map")
+def feature_mind_map():
+    return render_template("features/mind_map.html")
+
+@app.route("/feature/quiz")
+def feature_quiz():
+    return render_template("features/quiz.html")
+
+@app.route("/feature/placeholder-1")
+def feature_placeholder_1():
+    return render_template("features/placeholder_1.html")
+
+@app.route("/feature/placeholder-2")
+def feature_placeholder_2():
+    return render_template("features/placeholder_2.html")
+
+@app.route("/feature/placeholder-3")
+def feature_placeholder_3():
+    return render_template("features/placeholder_3.html")
+
+
+@app.route("/feature/ai-detection")
+def feature_ai_detection():
+    return render_template("features/ai_detection.html", access_token=session.get('access_token', ''))
+
+
 if __name__ == '__main__':
     app.run(debug=True)

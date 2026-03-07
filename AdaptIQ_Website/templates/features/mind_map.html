@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Mind Map{% endblock %}
+{% block content %}
+
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4">
+        <a href="#" onclick="window.location.href='/dashboard?session_id=' + new URLSearchParams(window.location.search).get('session_id')" class="btn btn-outline-secondary btn-sm me-3">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <div>
+            <h4 class="fw-bold mb-0">
+                <i class="fas fa-project-diagram me-2 text-primary"></i>Mind Map
+            </h4>
+            <small class="text-muted">Visual diagram of concept relationships</small>
+        </div>
+    </div>
+
+    <!-- Generate button -->
+    <div id="generateSection" class="text-center py-4">
+        <p class="text-muted mb-3">Click below to generate this mode for your uploaded content.</p>
+        <button id="generateBtn" class="btn btn-primary px-5 py-2 fw-semibold" onclick="generateFeature()">
+            <i class="fas fa-project-diagram me-2"></i>Generate Mind Map
+        </button>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loadingState" class="text-center py-5 d-none">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-3 text-muted">Generating your content...</p>
+    </div>
+
+    <!-- Error state -->
+    <div id="errorState" class="alert alert-danger d-none"></div>
+
+    <!-- Content panel -->
+    <div id="featureContent" class="d-none"></div>
+
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+    const SESSION_ID = new URLSearchParams(window.location.search).get("session_id");
+    const TOKEN = localStorage.getItem("sb_token");
+    const TAB_NAME = "mind_map";
+
+    window.addEventListener("DOMContentLoaded", async () => {
+        if (!SESSION_ID) {
+            document.getElementById("generateSection").classList.add("d-none");
+            showError("No session found. Please go back to the dashboard and upload content first.");
+            return;
+        }
+        try {
+            const res = await fetch(`/api/session/${SESSION_ID}`, {
+                headers: { "Authorization": `Bearer ${TOKEN}` }
+            });
+            const data = await res.json();
+            if (data.generated_tabs && data.generated_tabs.includes(TAB_NAME)) {
+                await generateFeature();
+            }
+        } catch (e) { }
+    });
+
+    async function generateFeature() {
+        document.getElementById("generateSection").classList.add("d-none");
+        document.getElementById("loadingState").classList.remove("d-none");
+        document.getElementById("errorState").classList.add("d-none");
+
+        try {
+            const res = await fetch(`/api/generate/${TAB_NAME}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ session_id: SESSION_ID })
+            });
+            let result;
+            try {
+                result = await res.json();
+            } catch(e) {
+                throw new Error("Invalid response from server. Please go back and re-upload your content.");
+            }
+            if (!res.ok) throw new Error(result.error || "Generation failed");
+
+            document.getElementById("loadingState").classList.add("d-none");
+            document.getElementById("featureContent").classList.remove("d-none");
+            renderContent(result.data);
+
+        } catch (err) {
+            document.getElementById("loadingState").classList.add("d-none");
+            showError(err.message);
+        }
+    }
+
+    function showError(msg) {
+        const el = document.getElementById("errorState");
+        el.textContent = msg;
+        el.classList.remove("d-none");
+    }
+
+    function renderContent(data) {
+        document.getElementById("featureContent").innerHTML = `
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <div class="mermaid">${data.mermaid}</div>
+        </div>
+      </div>`;
+
+        mermaid.initialize({ startOnLoad: false, theme: "default" });
+        mermaid.run({ querySelector: ".mermaid" }).catch(async (err) => {
+            try {
+                const res = await fetch("/api/heal_mermaid", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${TOKEN}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ session_id: SESSION_ID, broken: data.mermaid, error: err.message })
+                });
+                const healed = await res.json();
+                document.querySelector(".mermaid").textContent = healed.mermaid;
+                mermaid.run({ querySelector: ".mermaid" });
+            } catch {
+                document.getElementById("featureContent").innerHTML = `
+          <div class="alert alert-warning">
+            Mind map could not be rendered. Try the Step by Step mode instead.
+          </div>`;
+            }
+        });
+    }
+</script>
+{% endblock %}

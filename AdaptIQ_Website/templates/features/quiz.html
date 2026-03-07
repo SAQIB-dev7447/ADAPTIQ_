@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Quiz{% endblock %}
+{% block content %}
+
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4">
+        <a href="#" onclick="window.location.href='/dashboard?session_id=' + new URLSearchParams(window.location.search).get('session_id')" class="btn btn-outline-secondary btn-sm me-3">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <div>
+            <h4 class="fw-bold mb-0">
+                <i class="fas fa-question-circle me-2 text-primary"></i>Quiz
+            </h4>
+            <small class="text-muted">Test your understanding with AI-generated questions</small>
+        </div>
+    </div>
+
+    <!-- Generate button -->
+    <div id="generateSection" class="text-center py-4">
+        <p class="text-muted mb-3">Click below to generate this mode for your uploaded content.</p>
+        <button id="generateBtn" class="btn btn-primary px-5 py-2 fw-semibold" onclick="generateFeature()">
+            <i class="fas fa-question-circle me-2"></i>Generate Quiz
+        </button>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loadingState" class="text-center py-5 d-none">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-3 text-muted">Generating your content...</p>
+    </div>
+
+    <!-- Error state -->
+    <div id="errorState" class="alert alert-danger d-none"></div>
+
+    <!-- Content panel -->
+    <div id="featureContent" class="d-none"></div>
+
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+    const SESSION_ID = new URLSearchParams(window.location.search).get("session_id");
+    const TOKEN = localStorage.getItem("sb_token");
+    const TAB_NAME = "quiz";
+
+    window.addEventListener("DOMContentLoaded", async () => {
+        if (!SESSION_ID) {
+            document.getElementById("generateSection").classList.add("d-none");
+            showError("No session found. Please go back to the dashboard and upload content first.");
+            return;
+        }
+        try {
+            const res = await fetch(`/api/session/${SESSION_ID}`, {
+                headers: { "Authorization": `Bearer ${TOKEN}` }
+            });
+            const data = await res.json();
+            if (data.generated_tabs && data.generated_tabs.includes(TAB_NAME)) {
+                await generateFeature();
+            }
+        } catch (e) { }
+    });
+
+    async function generateFeature() {
+        document.getElementById("generateSection").classList.add("d-none");
+        document.getElementById("loadingState").classList.remove("d-none");
+        document.getElementById("errorState").classList.add("d-none");
+
+        try {
+            const res = await fetch(`/api/generate/${TAB_NAME}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ session_id: SESSION_ID })
+            });
+            let result;
+            try {
+                result = await res.json();
+            } catch(e) {
+                throw new Error("Invalid response from server. Please go back and re-upload your content.");
+            }
+            if (!res.ok) throw new Error(result.error || "Generation failed");
+
+            document.getElementById("loadingState").classList.add("d-none");
+            document.getElementById("featureContent").classList.remove("d-none");
+            renderContent(result.data);
+
+        } catch (err) {
+            document.getElementById("loadingState").classList.add("d-none");
+            showError(err.message);
+        }
+    }
+
+    function showError(msg) {
+        const el = document.getElementById("errorState");
+        el.textContent = msg;
+        el.classList.remove("d-none");
+    }
+
+    function renderContent(data) {
+        let score = 0;
+        let answered = 0;
+
+        document.getElementById("featureContent").innerHTML = `
+      <div class="d-flex flex-column gap-3" id="quizContainer">
+        ${data.questions.map((q, qi) => `
+          <div class="card border-0 shadow-sm" id="qcard-${qi}">
+            <div class="card-body p-4">
+              <p class="fw-semibold fs-5">${qi + 1}. ${q.question}</p>
+              <div class="d-flex flex-column gap-2 mt-3">
+                ${q.options.map((opt, oi) => `
+                  <div class="form-check p-3 border rounded"
+                    style="cursor:pointer" id="opt-${qi}-${oi}"
+                    onclick="checkAnswer(${qi}, ${oi}, ${opt.is_correct}, ${q.options.length})">
+                    <input class="form-check-input" type="radio"
+                      name="q${qi}" id="q${qi}o${oi}" value="${oi}">
+                    <label class="form-check-label w-100" for="q${qi}o${oi}">
+                      ${opt.text}
+                    </label>
+                  </div>`).join("")}
+              </div>
+              <div id="feedback-${qi}" class="mt-3 d-none small p-3 rounded"></div>
+            </div>
+          </div>`).join("")}
+      </div>
+      <div id="scoreDisplay" class="d-none card border-0 shadow-sm mt-3">
+        <div class="card-body p-4 text-center">
+          <h4 class="fw-bold" id="scoreText"></h4>
+          <p class="text-muted" id="scoreSubtext"></p>
+          <button class="btn btn-outline-primary mt-2"
+            onclick="window.location.href='/dashboard?session_id=${SESSION_ID}'">
+            Back to Dashboard
+          </button>
+        </div>
+      </div>`;
+
+        window.checkAnswer = (qi, oi, isCorrect, total) => {
+            const fb = document.getElementById(`feedback-${qi}`);
+            if (fb.classList.contains("d-none")) {
+                answered++;
+                if (isCorrect) score++;
+                fb.textContent = isCorrect
+                    ? "✓ Correct! " + data.questions[qi].explanation
+                    : "✗ Not quite. " + data.questions[qi].explanation;
+                fb.className = `mt-3 small p-3 rounded ${isCorrect ? "bg-success bg-opacity-10 text-success" : "bg-danger bg-opacity-10 text-danger"}`;
+                fb.classList.remove("d-none");
+                document.querySelectorAll(`input[name="q${qi}"]`).forEach(r => r.disabled = true);
+                document.querySelectorAll(`#qcard-${qi} .form-check`).forEach(d => d.style.cursor = "default");
+
+                if (answered === data.questions.length) {
+                    const display = document.getElementById("scoreDisplay");
+                    display.classList.remove("d-none");
+                    document.getElementById("scoreText").textContent = `${score} / ${data.questions.length}`;
+                    document.getElementById("scoreSubtext").textContent =
+                        score === data.questions.length ? "Perfect score!" :
+                            score >= 2 ? "Good effort!" : "Keep practising!";
+                }
+            }
+        };
+    }
+</script>
+{% endblock %}

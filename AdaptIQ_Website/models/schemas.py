@@ -59,3 +59,34 @@ class QuizQuestion(BaseModel):
 
 class QuizOutput(BaseModel):
     questions: list[QuizQuestion] = Field(min_length=3, max_length=3, description="Exactly 3 questions")
+
+
+# ── Feature 7: AI Content Detection ──────────────────────────────────────────
+
+class SentenceResult(BaseModel):
+    sentence: str
+    likelihood: str = Field(
+        description="One of: HIGH, MEDIUM, LOW — likelihood this sentence is AI-generated"
+    )
+    reason: str = Field(description="One sentence explaining why")
+
+class AIDetectionOutput(BaseModel):
+    overall_score: int = Field(
+        description="Percentage of content likely AI-generated, 0 to 100"
+    )
+    confidence: str = Field(
+        description="Overall confidence level: HIGH, MEDIUM, or LOW"
+    )
+    verdict: str = Field(
+        description="One sentence overall verdict on the content"
+    )
+    sentences: list[SentenceResult] = Field(
+        min_length=1,
+        description="Analysis of individual sentences or chunks"
+    )
+    human_indicators: list[str] = Field(
+        description="List of features suggesting human writing"
+    )
+    ai_indicators: list[str] = Field(
+        description="List of features suggesting AI writing"
+    )
