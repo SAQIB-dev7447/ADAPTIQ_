@@ -10,3 +10,5 @@ pymupdf
 trafilatura
 python-docx
 gunicorn>=21.2.0
+edge-tts
+nest_asyncio

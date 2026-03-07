@@ -6,7 +6,9 @@
 
     <!-- Header -->
     <div class="d-flex align-items-center mb-4">
-        <a href="#" onclick="window.location.href='/dashboard?session_id=' + new URLSearchParams(window.location.search).get('session_id')" class="btn btn-outline-secondary btn-sm me-3">
+        <a href="#"
+            onclick="window.location.href='/dashboard?session_id=' + new URLSearchParams(window.location.search).get('session_id')"
+            class="btn btn-outline-secondary btn-sm me-3">
             <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
         <div>
@@ -80,7 +82,7 @@
             let result;
             try {
                 result = await res.json();
-            } catch(e) {
+            } catch (e) {
                 throw new Error("Invalid response from server. Please go back and re-upload your content.");
             }
             if (!res.ok) throw new Error(result.error || "Generation failed");
@@ -111,8 +113,62 @@
             `<p class="fs-5 lh-lg mb-3">${p}</p>`
         ).join("")}
           <p class="text-muted fst-italic border-top pt-3">${data.summary_line}</p>
+
+          <!-- Audio section -->
+          <div class="border-top pt-4 mt-2">
+            <div class="d-flex align-items-center gap-3">
+              <button class="btn btn-outline-primary"
+                id="listenBtn" onclick="loadAudio()">
+                <i class="bi bi-headphones me-2"></i>Listen to Read Easy
+              </button>
+              <span class="text-muted small" id="audioStatus"></span>
+            </div>
+            <div id="audioPlayer" class="mt-3 d-none">
+              <audio controls class="w-100" id="audioEl">
+                <source id="audioSrc" type="audio/mpeg">
+                Your browser does not support audio playback.
+              </audio>
+            </div>
+          </div>
+
         </div>
       </div>`;
+    }
+
+    async function loadAudio() {
+        const btn = document.getElementById("listenBtn");
+        const status = document.getElementById("audioStatus");
+
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Generating audio...`;
+        status.textContent = "This may take a few seconds...";
+
+        try {
+            const res = await fetch("/api/audio/read-easy", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ session_id: SESSION_ID })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Audio generation failed");
+
+            document.getElementById("audioSrc").src = data.audio_url;
+            document.getElementById("audioEl").load();
+            document.getElementById("audioPlayer").classList.remove("d-none");
+
+            btn.innerHTML = `<i class="bi bi-headphones me-2"></i>Listen to Read Easy`;
+            btn.disabled = false;
+            status.textContent = data.cached ? "Loaded from cache" : "Audio ready";
+
+        } catch (err) {
+            btn.innerHTML = `<i class="bi bi-headphones me-2"></i>Listen to Read Easy`;
+            btn.disabled = false;
+            status.textContent = `Error: ${err.message}`;
+            status.classList.add("text-danger");
+        }
     }
 </script>
 {% endblock %}

@@ -2,7 +2,7 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="py-5 overflow-hidden">
+<section class="hero-section py-5 overflow-hidden">
     <div class="container py-5">
         <div class="row align-items-center">
             <div class="col-lg-6 mb-5 mb-lg-0 animate-fade-in">
@@ -18,11 +18,11 @@
                         class="btn btn-outline-secondary px-5 py-3 rounded-pill fs-5">View Demo</a>
                 </div>
             </div>
-            <div class="col-lg-6 position-relative animate-fade-in">
+            <div class="col-lg-6 position-relative animate-fade-in hero-image-col">
                 <div class="hero-image-container">
                     <img src="{{ url_for('static', filename='img/index.png') }}" class="img-fluid rounded-4 shadow-lg"
                         alt="AdaptIQ Preview">
-                    <div class="floating-badge bg-white p-3 rounded-3 shadow-sm position-absolute"
+                    <div class="hero-stat-badge floating-badge bg-white p-3 rounded-3 shadow-sm position-absolute"
                         style="bottom: -20px; left: -20px; max-width: 200px; border-left: 4px solid #10b981;">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-bolt text-success me-2"></i>
@@ -40,7 +40,7 @@
 </section>
 
 <!-- Learning Modes Section -->
-<section id="how-it-works" class="py-5 bg-light">
+<section id="how-it-works" class="modes-section py-5 bg-light">
     <div class="container py-5">
         <div class="text-center mb-5">
             <h2 class="display-5 fw-bold mb-3">Choose Your Learning Mode</h2>
@@ -50,7 +50,7 @@
         <div class="row g-4">
             <!-- Read-Easy Mode -->
             <div class="col-md-4">
-                <div class="card h-100 p-4">
+                <div class="mode-card card h-100 p-4">
                     <div class="mode-icon mode-read-easy">
                         <i class="fas fa-book-reader"></i>
                     </div>
@@ -92,7 +92,7 @@
 </section>
 
 <!-- Features Section -->
-<section id="features" class="py-5">
+<section id="features" class="built-section py-5">
     <div class="container py-5">
         <div class="text-center mb-5">
             <h2 class="display-5 fw-bold mb-3">Built for the Modern Mind</h2>
@@ -100,24 +100,25 @@
         </div>
         <div class="row g-4 text-start">
             <div class="col-md-4">
-                <div class="p-4 rounded-4 bg-white shadow-sm h-100">
-                    <div class="icon-box text-primary fs-3 mb-3"><i class="fas fa-sync"></i></div>
+                <div class="feature-box p-4 rounded-4 bg-white shadow-sm h-100">
+                    <div class="feature-icon icon-box text-primary fs-3 mb-3"><i class="fas fa-sync"></i></div>
                     <h4 class="fw-bold mb-2">Cognitive Sync</h4>
                     <p class="text-muted">Automatically detects your reading speed and comprehension patterns to adjust
                         the flow.</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="p-4 rounded-4 bg-white shadow-sm h-100">
-                    <div class="icon-box text-primary fs-3 mb-3"><i class="fas fa-wand-magic-sparkles"></i></div>
+                <div class="feature-box p-4 rounded-4 bg-white shadow-sm h-100">
+                    <div class="feature-icon icon-box text-primary fs-3 mb-3"><i class="fas fa-wand-magic-sparkles"></i>
+                    </div>
                     <h4 class="fw-bold mb-2">AI Formatting</h4>
                     <p class="text-muted">Instantly transform PDFs, articles, or notes into your preferred cognitive
                         structure.</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="p-4 rounded-4 bg-white shadow-sm h-100">
-                    <div class="icon-box text-primary fs-3 mb-3"><i class="fas fa-brain"></i></div>
+                <div class="feature-box p-4 rounded-4 bg-white shadow-sm h-100">
+                    <div class="feature-icon icon-box text-primary fs-3 mb-3"><i class="fas fa-brain"></i></div>
                     <h4 class="fw-bold mb-2">Smart Summaries</h4>
                     <p class="text-muted">AI-generated summaries that focus on what matters most for your specific
                         goals.</p>
@@ -128,13 +129,13 @@
 </section>
 
 <!-- Pricing Section -->
-<section id="pricing" class="py-5 bg-light">
+<section id="pricing" class="pricing-section py-5 bg-light">
     <div class="container py-5 text-center">
         <h2 class="display-5 fw-bold mb-3">Simple Pricing</h2>
         <p class="text-muted lead mb-5">Choose the plan that's right for your learning journey.</p>
         <div class="row g-4 justify-content-center">
             <div class="col-md-4">
-                <div class="card p-4 border-0 shadow-sm h-100">
+                <div class="pricing-card card p-4 border-0 shadow-sm h-100">
                     <h4 class="fw-bold">Free</h4>
                     <div class="display-6 fw-bold my-3">$0</div>
                     <ul class="list-unstyled text-muted mb-4">
@@ -147,7 +148,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card p-4 border border-primary shadow-lg h-100 position-relative">
+                <div class="pricing-card pro card p-4 border border-primary shadow-lg h-100 position-relative">
                     <span class="badge bg-primary position-absolute top-0 start-50 translate-middle">MOST POPULAR</span>
                     <h4 class="fw-bold mt-2">Pro Adaptor</h4>
                     <div class="display-6 fw-bold my-3">$12 <span class="fs-6 text-muted">/mo</span></div>
@@ -165,14 +166,15 @@
 </section>
 
 <!-- CTA Section -->
-<section class="py-5">
+<section class="cta-section py-5">
     <div class="container">
         <div class="cta-banner rounded-5 p-5 text-center text-white" style="background: var(--primary-gradient);">
             <h2 class="display-4 fw-bold mb-4">Ready to unlock your learning potential?</h2>
             <p class="fs-5 mb-5 opacity-75">Join 50,000+ students and professionals who are learning faster and smarter
                 with AdaptIQ.</p>
             <a href="{{ url_for('dashboard') }}"
-                class="btn btn-white bg-white text-primary px-5 py-3 rounded-pill fs-5 fw-bold">Create Free Account</a>
+                class="btn-cta btn btn-white bg-white text-primary px-5 py-3 rounded-pill fs-5 fw-bold">Create Free
+                Account</a>
         </div>
     </div>
 </section>

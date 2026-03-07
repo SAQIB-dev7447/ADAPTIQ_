@@ -6,7 +6,9 @@
 
     <!-- Header -->
     <div class="d-flex align-items-center mb-4">
-        <a href="#" onclick="window.location.href='/dashboard?session_id=' + new URLSearchParams(window.location.search).get('session_id')" class="btn btn-outline-secondary btn-sm me-3">
+        <a href="#"
+            onclick="window.location.href='/dashboard?session_id=' + new URLSearchParams(window.location.search).get('session_id')"
+            class="btn btn-outline-secondary btn-sm me-3">
             <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
         <div>
@@ -80,7 +82,7 @@
             let result;
             try {
                 result = await res.json();
-            } catch(e) {
+            } catch (e) {
                 throw new Error("Invalid response from server. Please go back and re-upload your content.");
             }
             if (!res.ok) throw new Error(result.error || "Generation failed");
@@ -103,23 +105,85 @@
 
     function renderContent(data) {
         document.getElementById("featureContent").innerHTML = `
-      <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
-          <h5 class="fw-bold mb-3">${data.title}</h5>
-          <ul class="list-group list-group-flush mb-4">
-            ${data.bullets.map(b => `
-              <li class="list-group-item border-0 ps-0">
-                <i class="fas fa-check-circle text-primary me-2"></i>${b}
-              </li>`).join("")}
-          </ul>
-          <div>
-            <strong class="d-block mb-2">Key Terms</strong>
-            ${data.key_terms.map(t =>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+
+        <h5 class="fw-bold mb-3">${data.title}</h5>
+
+        <ul class="list-group list-group-flush mb-4">
+          ${data.bullets.map(b => `
+            <li class="list-group-item border-0 ps-0">
+              <i class="fas fa-check-circle text-primary me-2"></i>${b}
+            </li>`).join("")}
+        </ul>
+
+        <div class="mb-4">
+          <strong class="d-block mb-2">Key Terms</strong>
+          ${data.key_terms.map(t =>
             `<span class="badge bg-primary me-1 mb-1 fs-6">${t}</span>`
         ).join("")}
+        </div>
+
+        <!-- Audio section -->
+        <div class="border-top pt-4 mt-2">
+          <div class="d-flex align-items-center gap-3" id="audioSection">
+            <button class="btn btn-outline-primary"
+              id="listenBtn" onclick="loadAudio()">
+              <i class="fas fa-headphones me-2"></i>Listen to Summary
+            </button>
+            <span class="text-muted small" id="audioStatus"></span>
+          </div>
+          <div id="audioPlayer" class="mt-3 d-none">
+            <audio controls class="w-100" id="audioEl">
+              <source id="audioSrc" type="audio/mpeg">
+              Your browser does not support audio playback.
+            </audio>
           </div>
         </div>
-      </div>`;
+
+      </div>
+    </div>`;
+    }
+
+    async function loadAudio() {
+        const btn = document.getElementById("listenBtn");
+        const status = document.getElementById("audioStatus");
+
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Generating audio...`;
+        status.textContent = "This may take a few seconds...";
+
+        // Ensure TOKEN points to ACCESS_TOKEN generated via Flask session if it is defined in the script
+        // Or fetch from localStorage depending on if the app shifted to token passing or not. We'll use the token already present.
+        let validToken = typeof ACCESS_TOKEN !== 'undefined' ? ACCESS_TOKEN : TOKEN;
+
+        try {
+            const res = await fetch("/api/audio/summary", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${validToken}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ session_id: SESSION_ID })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Audio generation failed");
+
+            // Show audio player
+            document.getElementById("audioSrc").src = data.audio_url;
+            document.getElementById("audioEl").load();
+            document.getElementById("audioPlayer").classList.remove("d-none");
+
+            btn.innerHTML = `<i class="fas fa-headphones me-2"></i>Listen to Summary`;
+            btn.disabled = false;
+            status.textContent = data.cached ? "Loaded from cache" : "Audio ready";
+
+        } catch (err) {
+            btn.innerHTML = `<i class="fas fa-headphones me-2"></i>Listen to Summary`;
+            btn.disabled = false;
+            status.textContent = `Error: ${err.message}`;
+            status.classList.add("text-danger");
+        }
     }
 </script>
 {% endblock %}

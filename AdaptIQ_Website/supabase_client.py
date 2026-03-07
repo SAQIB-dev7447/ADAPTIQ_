@@ -58,6 +58,26 @@ def sign_out(access_token: str) -> None:
         headers={**_auth_headers(), "Authorization": f"Bearer {access_token}"},
     )
 
+def upload_audio(file_bytes: bytes, filename: str) -> str:
+    """
+    Uploads MP3 bytes to Supabase Storage audio bucket.
+    Returns the public URL of the uploaded file.
+    """
+    url = os.environ.get("SUPABASE_URL", "")
+    key = os.environ.get("SUPABASE_SERVICE_KEY", os.environ.get("SUPABASE_KEY", ""))
+    upload_url = f"{url}/storage/v1/object/audio/{filename}"
+    headers = {
+        "apikey": key,
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "audio/mpeg",
+        "x-upsert": "true"
+    }
+    r = requests.post(upload_url, headers=headers, data=file_bytes)
+    r.raise_for_status()
+    public_url = f"{url}/storage/v1/object/public/audio/{filename}"
+    return public_url
+
+
 
 # Legacy compatibility shim — kept so existing app.py import doesn't break.
 def get_supabase_client():
