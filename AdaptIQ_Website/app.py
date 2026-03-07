@@ -1,3 +1,7 @@
+import os
+import threading
+import time
+import requests as req
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify, flash
 from config import Config
 import supabase_client
@@ -122,6 +126,31 @@ def feature_ai_detection():
     return render_template("features/ai_detection.html", access_token=session.get('access_token', ''))
 
 
+@app.route("/ping")
+def ping():
+    return "ok", 200
+
+
+# ── Keep Render alive ─────────────────────────────────────────────────
+def keep_alive():
+    """Pings the app every 10 minutes to prevent Render free tier spindown."""
+    url = os.environ.get("RENDER_URL", "")
+    if not url:
+        return  # Only runs in production when RENDER_URL is set
+    while True:
+        try:
+            req.get(url, timeout=10)
+        except Exception:
+            pass  # Silently ignore any ping failures
+        time.sleep(600)  # 10 minutes
+
+# Start keep-alive thread only in production
+if os.environ.get("RENDER_URL"):
+    t = threading.Thread(target=keep_alive, daemon=True)
+    t.start()
+# ─────────────────────────────────────────────────────────────────────
+
+
 if __name__ == "__main__":
-    import os
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
