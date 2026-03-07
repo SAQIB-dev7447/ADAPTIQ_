@@ -15,11 +15,11 @@ AdaptIQ breaks down content into 6 distinct, high-impact formats:
 
 | Mode | Description | Powered By |
 | :--- | :--- | :--- |
-| **🚀 Summaries** | High-impact bullet points capturing the core essence of any text. | Gemini 2.5 |
-| **📖 Easy Read** | Complex language simplified for high comprehension with key term definitions. | Gemini 2.5 |
-| **🎯 Focus Mode** | Progressive content reveal with section-by-section recaps to combat overwhelm. | Gemini 2.5 |
-| **🪜 Step-by-Step** | Logical logic breakdowns with plain-English formulas. | Gemini 2.5 |
-| **🗺️ Mind Map** | Dynamic, interactive visual structures using Mermaid.js. | Gemini 2.5 |
+| **🚀 Summaries** | High-impact bullet points capturing the core essence of any text. | Groq Llama |
+| **📖 Easy Read** | Complex language simplified for high comprehension with key term definitions. | Groq Llama |
+| **🎯 Focus Mode** | Progressive content reveal with section-by-section recaps to combat overwhelm. | Groq Llama |
+| **🪜 Step-by-Step** | Logical logic breakdowns with plain-English formulas. | Groq Llama |
+| **🗺️ Mind Map** | Dynamic, interactive visual structures using Mermaid.js. | Groq Llama |
 | **📝 Smart Quiz** | Instant multiple-choice tests to verify your understanding. | Groq Llama |
 
 ---
@@ -28,7 +28,7 @@ AdaptIQ breaks down content into 6 distinct, high-impact formats:
 
 - **Backend**: Python 3.12, Flask
 - **Frontend**: Bootstrap 5, Vanilla JS, Mermaid.js
-- **AI Engines**: Google Gemini 2.5 Flash, Groq (Llama 3 70B)
+- **AI Engines**: Groq (Llama 3 70B)
 - **Database/Cache**: Supabase (PostgreSQL)
 - **Environment**: Secured with `.env` management
 
@@ -38,7 +38,7 @@ AdaptIQ breaks down content into 6 distinct, high-impact formats:
 
 ### Prerequisites
 - Python 3.12+
-- Gemini & Groq API Keys
+- Groq API Keys
 
 ### Installation
 
