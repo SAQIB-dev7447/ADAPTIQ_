@@ -11,7 +11,8 @@ from google.genai import types
 from groq import Groq
 from models.schemas import (
     SummaryOutput, ReadEasyOutput, FocusModeOutput,
-    StepByStepOutput, MindMapOutput, QuizOutput
+    StepByStepOutput, MindMapOutput, QuizOutput,
+    AIDetectionOutput
 )
 
 # Clients are lazily initialized inside functions after dotenv has loaded env vars
@@ -89,6 +90,22 @@ TAB_CONFIG = {
             "You are an expert quiz writer. "
             "Generate exactly 3 multiple choice questions from the following content. "
             "Each question must have exactly 4 options. Mark exactly one as correct.\n\n"
+            "CONTENT:\n{text}"
+        ),
+    },
+    "ai_detection": {
+        "schema": AIDetectionOutput,
+        "model": "gemini",
+        "prompt": (
+            "You are an expert forensic linguist and AI content detection specialist. "
+            "Analyse the following text and determine what percentage is likely AI-generated. "
+            "Look for these AI indicators: overly uniform sentence structure, "
+            "lack of personal anecdotes, hedging language, perfect grammar throughout, "
+            "generic transitions, absence of typos or colloquialisms, "
+            "and repetitive phrasing patterns. "
+            "Also identify human indicators such as personal voice, irregular rhythm, "
+            "domain-specific slang, emotional language, and imperfect grammar. "
+            "Be objective and evidence-based in your analysis.\n\n"
             "CONTENT:\n{text}"
         ),
     },

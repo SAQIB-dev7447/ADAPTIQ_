@@ -1,193 +1,345 @@
 {% extends 'base.html' %}
 
+{% block title %}Dashboard{% endblock %}
 {% block content %}
+
 <!-- Inject JWT token from Flask session safely -->
 <script>
     const ACCESS_TOKEN = {{ access_token | tojson }};
 </script>
 
-<div class="container py-5">
+<div class="container py-4">
+    <div class="row g-4">
 
-    <!-- ── Upload / Action Center ── -->
-    <div class="card shadow-sm border-0 rounded-4 p-5 mb-5 bg-white">
-        <div class="row align-items-start">
-            <div class="col-lg-7">
-                <h1 class="fw-bold mb-2">Adaptive Dashboard</h1>
-                <p class="text-muted lead mb-4">Upload your content once. Every learning format is generated on demand
-                    and cached permanently.</p>
+        <!-- LEFT COLUMN: Upload + session info -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
 
-                <!-- Input type selector -->
-                <ul class="nav nav-pills mb-3 gap-2" id="uploadTypeTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active rounded-pill px-3 py-1" id="tab-paste-btn" data-bs-toggle="pill"
-                            data-bs-target="#upload-paste" type="button">Paste Text</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link rounded-pill px-3 py-1" id="tab-url-btn" data-bs-toggle="pill"
-                            data-bs-target="#upload-url" type="button">URL</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link rounded-pill px-3 py-1" id="tab-pdf-btn" data-bs-toggle="pill"
-                            data-bs-target="#upload-pdf" type="button">PDF</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link rounded-pill px-3 py-1" id="tab-docx-btn" data-bs-toggle="pill"
-                            data-bs-target="#upload-docx" type="button">DOCX</button>
-                    </li>
-                </ul>
+                    <h5 class="fw-bold mb-1" id="sourceName">Adaptive Dashboard</h5>
+                    <span class="badge bg-secondary mb-3" id="sourceType"></span>
 
-                <div class="tab-content" id="uploadTypeContent">
-                    <!-- Paste -->
-                    <div class="tab-pane fade show active" id="upload-paste" role="tabpanel">
-                        <div class="border rounded-4 p-3 bg-light mb-3">
-                            <textarea id="paste-content" class="form-control border-0 bg-transparent" rows="5"
-                                placeholder="Paste your text here..."></textarea>
+                    <hr>
+
+                    <!-- Upload new content -->
+                    <p class="text-muted small mb-2">Upload content to start a new session.</p>
+
+                    <!-- Input type selector -->
+                    <ul class="nav nav-pills mb-3 gap-2 flex-wrap" id="uploadTypeTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active rounded-pill px-3 py-1" id="tab-paste-btn"
+                                data-bs-toggle="pill" data-bs-target="#upload-paste" type="button">Paste Text</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link rounded-pill px-3 py-1" id="tab-url-btn" data-bs-toggle="pill"
+                                data-bs-target="#upload-url" type="button">URL</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link rounded-pill px-3 py-1" id="tab-pdf-btn" data-bs-toggle="pill"
+                                data-bs-target="#upload-pdf" type="button">PDF</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link rounded-pill px-3 py-1" id="tab-docx-btn" data-bs-toggle="pill"
+                                data-bs-target="#upload-docx" type="button">DOCX</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="uploadTypeContent">
+                        <!-- Paste -->
+                        <div class="tab-pane fade show active" id="upload-paste" role="tabpanel">
+                            <div class="border rounded-4 p-3 bg-light mb-3">
+                                <textarea id="paste-content" class="form-control border-0 bg-transparent" rows="5"
+                                    placeholder="Paste your text here..."></textarea>
+                            </div>
+                        </div>
+                        <!-- URL -->
+                        <div class="tab-pane fade" id="upload-url" role="tabpanel">
+                            <div class="border rounded-4 p-3 bg-light mb-3">
+                                <input type="url" id="url-content" class="form-control border-0 bg-transparent"
+                                    placeholder="https://example.com/article">
+                            </div>
+                        </div>
+                        <!-- PDF -->
+                        <div class="tab-pane fade" id="upload-pdf" role="tabpanel">
+                            <div class="border rounded-4 p-3 bg-light mb-3">
+                                <input type="file" id="pdf-file" class="form-control border-0 bg-transparent"
+                                    accept=".pdf" capture="environment">
+                            </div>
+                        </div>
+                        <!-- DOCX -->
+                        <div class="tab-pane fade" id="upload-docx" role="tabpanel">
+                            <div class="border rounded-4 p-3 bg-light mb-3">
+                                <input type="file" id="docx-file" class="form-control border-0 bg-transparent"
+                                    accept=".docx,.doc">
+                            </div>
                         </div>
                     </div>
-                    <!-- URL -->
-                    <div class="tab-pane fade" id="upload-url" role="tabpanel">
-                        <div class="border rounded-4 p-3 bg-light mb-3">
-                            <input type="url" id="url-content" class="form-control border-0 bg-transparent"
-                                placeholder="https://example.com/article">
+
+                    <!-- Source name (optional) -->
+                    <input type="text" id="source-name" class="form-control mb-3"
+                        placeholder="Give it a name (optional)">
+
+                    <!-- Upload button -->
+                    <button id="upload-btn" onclick="startAdaptation()"
+                        class="btn btn-primary w-100 py-2 rounded-pill fw-bold">
+                        Unlock Learning Path <i class="fas fa-magic ms-2"></i>
+                    </button>
+
+                    <!-- Status messages -->
+                    <div id="upload-status" class="mt-3 d-none">
+                        <div class="d-flex align-items-center gap-2 text-muted">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                            <span id="upload-status-text">Processing your content...</span>
                         </div>
                     </div>
-                    <!-- PDF -->
-                    <div class="tab-pane fade" id="upload-pdf" role="tabpanel">
-                        <div class="border rounded-4 p-3 bg-light mb-3">
-                            <input type="file" id="pdf-file" class="form-control border-0 bg-transparent" accept=".pdf"
-                                capture="environment">
-                        </div>
-                    </div>
-                    <!-- DOCX -->
-                    <div class="tab-pane fade" id="upload-docx" role="tabpanel">
-                        <div class="border rounded-4 p-3 bg-light mb-3">
-                            <input type="file" id="docx-file" class="form-control border-0 bg-transparent"
-                                accept=".docx,.doc">
-                        </div>
-                    </div>
-                </div>
+                    <div id="upload-error" class="alert alert-danger mt-3 d-none"></div>
 
-                <!-- Source name (optional) -->
-                <input type="text" id="source-name" class="form-control mb-3" placeholder="Give it a name (optional)">
+                    <hr class="mt-4">
 
-                <!-- Upload button -->
-                <button id="upload-btn" onclick="startAdaptation()"
-                    class="btn btn-primary btn-lg px-5 py-3 rounded-pill fw-bold shadow-lg">
-                    Unlock Learning Path <i class="fas fa-magic ms-2"></i>
-                </button>
-
-                <!-- Status messages -->
-                <div id="upload-status" class="mt-3 d-none">
-                    <div class="d-flex align-items-center gap-2 text-muted">
-                        <div class="spinner-border spinner-border-sm" role="status"></div>
-                        <span id="upload-status-text">Processing your content...</span>
+                    <!-- Past sessions -->
+                    <p class="text-muted small mb-2">Recent Sessions</p>
+                    <div id="sessionHistory" class="d-flex flex-column gap-2">
+                        <div class="text-muted small">Loading history...</div>
                     </div>
-                </div>
-                <div id="upload-error" class="alert alert-danger mt-3 d-none"></div>
-            </div>
-            <div class="col-lg-5 d-none d-lg-block">
-                <div class="p-4 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-10 text-center">
-                    <div class="display-1 text-primary mb-3"><i class="fas fa-brain"></i></div>
-                    <h5 class="fw-bold">One Upload. Six Formats.</h5>
-                    <p class="small text-muted mb-0">Content is extracted once and cached permanently. Every tab is
-                        generated on your first click — never again.</p>
+
                 </div>
             </div>
         </div>
+
+        <!-- RIGHT COLUMN: Feature grid -->
+        <div class="col-lg-8">
+            <h5 class="fw-bold mb-3">Choose a Learning Mode</h5>
+            <div class="row g-3" id="featureGrid">
+
+                <!-- Summary -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 feature-card" data-feature="summary"
+                        onclick="goToFeature('summary', 'feature/summary')">
+                        <div class="card-body p-4 text-center">
+                            <i class="fas fa-list-ul display-6 text-primary mb-3"></i>
+                            <h6 class="fw-bold">Summary</h6>
+                            <p class="text-muted small mb-0">Key points and important terms</p>
+                            <span class="badge bg-success mt-2 d-none" id="done-summary">✓ Generated</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Read Easy -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 feature-card" data-feature="read_easy"
+                        onclick="goToFeature('read_easy', 'feature/read-easy')">
+                        <div class="card-body p-4 text-center">
+                            <i class="fas fa-book display-6 text-primary mb-3"></i>
+                            <h6 class="fw-bold">Read Easy</h6>
+                            <p class="text-muted small mb-0">Simplified language for easier reading</p>
+                            <span class="badge bg-success mt-2 d-none" id="done-read_easy">✓ Generated</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Focus Mode -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 feature-card" data-feature="focus_mode"
+                        onclick="goToFeature('focus_mode', 'feature/focus-mode')">
+                        <div class="card-body p-4 text-center">
+                            <i class="fas fa-crosshairs display-6 text-primary mb-3"></i>
+                            <h6 class="fw-bold">Focus Mode</h6>
+                            <p class="text-muted small mb-0">Progressive reveal sections</p>
+                            <span class="badge bg-success mt-2 d-none" id="done-focus_mode">✓ Generated</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step by Step -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 feature-card" data-feature="step_by_step"
+                        onclick="goToFeature('step_by_step', 'feature/step-by-step')">
+                        <div class="card-body p-4 text-center">
+                            <i class="fas fa-list-ol display-6 text-primary mb-3"></i>
+                            <h6 class="fw-bold">Step by Step</h6>
+                            <p class="text-muted small mb-0">Ordered logical breakdown</p>
+                            <span class="badge bg-success mt-2 d-none" id="done-step_by_step">✓ Generated</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mind Map -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 feature-card" data-feature="mind_map"
+                        onclick="goToFeature('mind_map', 'feature/mind-map')">
+                        <div class="card-body p-4 text-center">
+                            <i class="fas fa-project-diagram display-6 text-primary mb-3"></i>
+                            <h6 class="fw-bold">Mind Map</h6>
+                            <p class="text-muted small mb-0">Visual concept diagram</p>
+                            <span class="badge bg-success mt-2 d-none" id="done-mind_map">✓ Generated</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 feature-card" data-feature="quiz"
+                        onclick="goToFeature('quiz', 'feature/quiz')">
+                        <div class="card-body p-4 text-center">
+                            <i class="fas fa-question-circle display-6 text-primary mb-3"></i>
+                            <h6 class="fw-bold">Quiz</h6>
+                            <p class="text-muted small mb-0">Test your understanding</p>
+                            <span class="badge bg-success mt-2 d-none" id="done-quiz">✓ Generated</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Detection -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 feature-card" data-feature="ai_detection"
+                        onclick="goToFeature('ai_detection', 'feature/ai-detection')">
+                        <div class="card-body p-4 text-center">
+                            <i class="fas fa-robot display-6 text-primary mb-3"></i>
+                            <h6 class="fw-bold">AI Detection</h6>
+                            <p class="text-muted small mb-0">Check how much content is AI-generated</p>
+                            <span class="badge bg-success mt-2 d-none" id="done-ai_detection">✓ Generated</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Placeholder 2 -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 feature-card opacity-75"
+                        onclick="goToFeature(null, 'feature/placeholder-2')">
+                        <div class="card-body p-4 text-center">
+                            <i class="fas fa-star display-6 text-secondary mb-3"></i>
+                            <h6 class="fw-bold text-muted">Coming Soon</h6>
+                            <p class="text-muted small mb-0">New feature in development</p>
+                            <span class="badge bg-secondary mt-2">Soon</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Placeholder 3 -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 feature-card opacity-75"
+                        onclick="goToFeature(null, 'feature/placeholder-3')">
+                        <div class="card-body p-4 text-center">
+                            <i class="fas fa-star display-6 text-secondary mb-3"></i>
+                            <h6 class="fw-bold text-muted">Coming Soon</h6>
+                            <p class="text-muted small mb-0">New feature in development</p>
+                            <span class="badge bg-secondary mt-2">Soon</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </div>
-
-    <!-- ── Modular Nav Tabs ── -->
-    <ul class="nav nav-pills nav-fill gap-2 mb-4 p-2 bg-light rounded-pill shadow-sm" id="pills-tab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active rounded-pill fw-bold py-3 tab-locked" id="tab-summary" data-bs-toggle="pill"
-                data-bs-target="#panel-summary" data-tab="summary" type="button" disabled
-                onclick="handleTabClick('summary')">
-                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Summary
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill fw-bold py-3 tab-locked" id="tab-read_easy" data-bs-toggle="pill"
-                data-bs-target="#panel-read_easy" data-tab="read_easy" type="button" disabled
-                onclick="handleTabClick('read_easy')">
-                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Read Easy
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill fw-bold py-3 tab-locked" id="tab-focus_mode" data-bs-toggle="pill"
-                data-bs-target="#panel-focus_mode" data-tab="focus_mode" type="button" disabled
-                onclick="handleTabClick('focus_mode')">
-                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Focus Mode
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill fw-bold py-3 tab-locked" id="tab-step_by_step" data-bs-toggle="pill"
-                data-bs-target="#panel-step_by_step" data-tab="step_by_step" type="button" disabled
-                onclick="handleTabClick('step_by_step')">
-                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Step by Step
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill fw-bold py-3 tab-locked" id="tab-mind_map" data-bs-toggle="pill"
-                data-bs-target="#panel-mind_map" data-tab="mind_map" type="button" disabled
-                onclick="handleTabClick('mind_map')">
-                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Mind Map
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link rounded-pill fw-bold py-3 tab-locked" id="tab-quiz" data-bs-toggle="pill"
-                data-bs-target="#panel-quiz" data-tab="quiz" type="button" disabled onclick="handleTabClick('quiz')">
-                <span class="tab-icon"><i class="fas fa-lock me-1"></i></span> Quiz
-            </button>
-        </li>
-    </ul>
-
-    <!-- ── Tab Panels ── -->
-    <div class="tab-content" id="pills-tabContent">
-        <div class="tab-pane fade show active p-0" id="panel-summary" role="tabpanel">{% include 'summary.html' %}</div>
-        <div class="tab-pane fade p-0" id="panel-read_easy" role="tabpanel">{% include 'read_easy.html' %}</div>
-        <div class="tab-pane fade p-0" id="panel-focus_mode" role="tabpanel">{% include 'focus_mode.html' %}</div>
-        <div class="tab-pane fade p-0" id="panel-step_by_step" role="tabpanel">{% include 'step_mode.html' %}</div>
-        <div class="tab-pane fade p-0" id="panel-mind_map" role="tabpanel">{% include 'mind_map.html' %}</div>
-        <div class="tab-pane fade p-0" id="panel-quiz" role="tabpanel">{% include 'quiz.html' %}</div>
-    </div>
-
 </div>
 
-<!-- Mermaid for mind map rendering -->
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<!-- Load existing JS for upload flow is handled in extra_js below -->
 
-<!-- Load tab render scripts -->
-<script src="{{ url_for('static', filename='js/summary.js') }}"></script>
-<script src="{{ url_for('static', filename='js/read_easy.js') }}"></script>
-<script src="{{ url_for('static', filename='js/focus_mode.js') }}"></script>
-<script src="{{ url_for('static', filename='js/step_mode.js') }}"></script>
-<script src="{{ url_for('static', filename='js/mind_map.js') }}"></script>
-<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
-<!-- Main dashboard orchestration (must load last) -->
+{% endblock %}
+{% block extra_js %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+    const SESSION_ID = new URLSearchParams(window.location.search).get("session_id");
 
-<style>
-    .nav-pills .nav-link.active {
-        background: #007bff !important;
-        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    function goToFeature(tabKey, path) {
+        window.location.href = `/${path}?session_id=${SESSION_ID}`;
     }
 
-    .nav-pills .nav-link:not(.active) {
-        color: #6c757d;
+    async function loadSessionMeta() {
+        if (!SESSION_ID) return;
+        try {
+            const res = await fetch(`/api/session/${SESSION_ID}`, {
+                headers: { "Authorization": `Bearer ${ACCESS_TOKEN}` }
+            });
+            const data = await res.json();
+            if (!res.ok) return;
+
+            document.getElementById("sourceName").textContent = data.source_name || "Adaptive Dashboard";
+
+            const badgeEl = document.getElementById("sourceType");
+            if (data.source_type) {
+                badgeEl.textContent = "Current Content";
+                badgeEl.classList.remove("d-none");
+            } else {
+                badgeEl.classList.add("d-none");
+            }
+
+            // Show green badge on already-generated features
+            (data.generated_tabs || []).forEach(tab => {
+                const badge = document.getElementById(`done-${tab}`);
+                if (badge) badge.classList.remove("d-none");
+            });
+
+        } catch (e) {
+            console.error("Session load failed:", e);
+        }
     }
 
-    .tab-locked {
-        opacity: 0.55;
-        cursor: not-allowed !important;
+    async function loadSessionHistory() {
+        try {
+            const res = await fetch(`/api/sessions?t=${Date.now()}`, {
+                headers: { "Authorization": `Bearer ${ACCESS_TOKEN}` }
+            });
+            const sessions = await res.json();
+            const container = document.getElementById("sessionHistory");
+            if (!sessions.length) {
+                container.innerHTML = `<div class="text-muted small">No past sessions.</div>`;
+                return;
+            }
+            container.innerHTML = sessions.slice(0, 5).map(s => {
+                const isCurrent = s.id === SESSION_ID;
+                return `
+                <div class="card border-0 bg-light p-2 small mb-2 ${isCurrent ? 'border-primary border border-2' : ''}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-truncate flex-grow-1 pe-2">
+                            <div class="fw-semibold text-truncate" title="${s.source_name || "Untitled"}">${s.source_name || "Untitled"}</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">${s.generated_tabs?.length || 0} modes generated</div>
+                        </div>
+                        <div class="flex-shrink-0 d-flex align-items-center gap-2">
+                            ${isCurrent
+                        ? '<span class="badge bg-success">Current</span>'
+                        : `<button onclick="window.location.href='/dashboard?session_id=${s.id}'" class="btn btn-sm btn-outline-primary border border-1 py-0 px-2" style="font-size: 0.75rem;">Switch</button>`
+                    }
+                            <button onclick="deleteSession('${s.id}')" class="btn btn-sm btn-outline-danger border-0 py-0 px-1" title="Delete session">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join("");
+        } catch (e) {
+            document.getElementById("sessionHistory").innerHTML =
+                `<div class="text-muted small">Could not load history.</div>`;
+        }
     }
 
-    .tab-unlocked {
-        opacity: 1;
-        cursor: pointer !important;
+    async function deleteSession(id) {
+        if (!confirm("Are you sure you want to delete this content?")) return;
+
+        try {
+            const res = await fetch(`/api/session/${id}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${ACCESS_TOKEN}` }
+            });
+
+            if (res.ok) {
+                if (id === SESSION_ID) {
+                    window.location.href = "/dashboard";
+                } else {
+                    loadSessionHistory();
+                }
+            } else {
+                alert("Failed to delete session.");
+            }
+        } catch (e) {
+            console.error("Error deleting session:", e);
+            alert("Error deleting session.");
+        }
     }
 
-    .tab-done .tab-icon i {
-        color: #28a745;
-    }
-</style>
+    loadSessionMeta();
+    loadSessionHistory();
+</script>
 {% endblock %}

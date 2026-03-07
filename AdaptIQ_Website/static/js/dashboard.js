@@ -1,35 +1,34 @@
 /**
- * dashboard.js — AdaptIQ Dashboard Orchestrator
+ * dashboard.js — AdaptIQ Dashboard (Multi-Page Architecture)
  *
- * RULES (from instruction file):
- *  - tabCache is a plain JS object in memory. NEVER use localStorage or sessionStorage.
- *  - Each tab click = at most ONE network request (memory cache is checked first).
- *  - No AI calls during upload.
- *  - All API requests include: Authorization: Bearer <token>
+ * After upload:
+ *   - Stores session_id in memory + URL query param
+ *   - Updates all feature card onclick handlers to pass session_id
+ *   - Does NOT call AI — only text extraction + Supabase session creation
  */
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let currentSessionId = null;
-const tabCache = {};  // { tabName: responseData } — JS memory only, cleared on page reload
+let currentSessionId = new URLSearchParams(window.location.search).get("session_id") || null;
 
-const VALID_TABS = ['summary', 'read_easy', 'focus_mode', 'step_by_step', 'mind_map', 'quiz'];
-
-// Tab render functions defined in individual tab JS files
-const TAB_RENDERERS = {
-    summary: (data) => renderSummary(data),
-    read_easy: (data) => renderReadEasy(data),
-    focus_mode: (data) => renderFocusMode(data),
-    step_by_step: (data) => renderStepByStep(data),
-    mind_map: (data) => renderMindMap(data),
-    quiz: (data) => renderQuiz(data),
+const FEATURE_ROUTES = {
+    summary: "feature/summary",
+    read_easy: "feature/read-easy",
+    focus_mode: "feature/focus-mode",
+    step_by_step: "feature/step-by-step",
+    mind_map: "feature/mind-map",
+    quiz: "feature/quiz",
 };
+
+// ── On Page Load: restore session_id from URL ─────────────────────────────────
+window.addEventListener("DOMContentLoaded", () => {
+    if (currentSessionId) {
+        updateFeatureCards(currentSessionId);
+        showSessionReady(null); // show unlocked state without banner text
+    }
+});
 
 // ── Upload Flow ───────────────────────────────────────────────────────────────
 
-/**
- * Reads the active upload tab, builds a FormData, and POSTs to /api/upload.
- * ZERO AI calls happen here — only text extraction + Supabase session row creation.
- */
 async function startAdaptation() {
     const uploadBtn = document.getElementById('upload-btn');
     const statusEl = document.getElementById('upload-status');
@@ -46,25 +45,25 @@ async function startAdaptation() {
     const pdfPane = document.getElementById('upload-pdf');
     const docxPane = document.getElementById('upload-docx');
 
-    if (pastePane.classList.contains('active')) {
+    if (pastePane.classList.contains('active') || pastePane.classList.contains('show')) {
         const text = document.getElementById('paste-content').value.trim();
         if (!text) { showUploadError(errorEl, 'Please paste some text first.'); return; }
         formData.append('source_type', 'paste');
         formData.append('content', text);
 
-    } else if (urlPane.classList.contains('active')) {
+    } else if (urlPane.classList.contains('active') || urlPane.classList.contains('show')) {
         const url = document.getElementById('url-content').value.trim();
         if (!url) { showUploadError(errorEl, 'Please enter a URL.'); return; }
         formData.append('source_type', 'url');
         formData.append('url', url);
 
-    } else if (pdfPane.classList.contains('active')) {
+    } else if (pdfPane.classList.contains('active') || pdfPane.classList.contains('show')) {
         const file = document.getElementById('pdf-file').files[0];
         if (!file) { showUploadError(errorEl, 'Please select a PDF file.'); return; }
         formData.append('source_type', 'pdf');
         formData.append('file', file);
 
-    } else if (docxPane.classList.contains('active')) {
+    } else if (docxPane.classList.contains('active') || docxPane.classList.contains('show')) {
         const file = document.getElementById('docx-file').files[0];
         if (!file) { showUploadError(errorEl, 'Please select a DOCX file.'); return; }
         formData.append('source_type', 'docx');
@@ -77,7 +76,7 @@ async function startAdaptation() {
     const sourceName = document.getElementById('source-name').value.trim() || 'Untitled';
     formData.append('source_name', sourceName);
 
-    // Set loading state
+    // Loading state
     uploadBtn.disabled = true;
     statusEl.classList.remove('d-none');
     statusTxt.textContent = 'Extracting content...';
@@ -88,7 +87,10 @@ async function startAdaptation() {
             headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` },
             body: formData,
         });
-        const json = await res.json();
+
+        let json;
+        try { json = await res.json(); }
+        catch (e) { throw new Error('Server error — please try again.'); }
 
         if (!res.ok) {
             showUploadError(errorEl, json.error || 'Upload failed. Please try again.');
@@ -96,8 +98,18 @@ async function startAdaptation() {
         }
 
         currentSessionId = json.session_id;
-        statusTxt.textContent = `✅ "${json.source_name}" ready — click any tab to generate`;
-        unlockAllTabs();
+
+        // Update URL so reload/back keeps session
+        const newUrl = `${window.location.pathname}?session_id=${currentSessionId}`;
+        window.history.replaceState({}, '', newUrl);
+
+        // Update all feature cards to carry the session_id
+        updateFeatureCards(currentSessionId);
+
+        // Show success banner
+        showSessionReady(json.source_name);
+
+        statusEl.classList.add('d-none');
 
     } catch (err) {
         showUploadError(errorEl, `Network error: ${err.message}`);
@@ -106,88 +118,51 @@ async function startAdaptation() {
     }
 }
 
-// ── Tab Click Handler ─────────────────────────────────────────────────────────
+// ── Feature Card Updater ──────────────────────────────────────────────────────
 
 /**
- * Called on every learning tab button click via onclick="handleTabClick('...')".
- *
- * Flow per instruction Section 11:
- *   1. Is data in tabCache?  → YES: render immediately, no network call.
- *   2. No cache?             → POST /api/generate/<tab_name>, store result, render.
+ * Updates every feature card's onclick to navigate with session_id.
+ * This replaces the old unlockAllTabs() which only worked in the single-page layout.
  */
-async function handleTabClick(tabName) {
-    if (!currentSessionId) return;
-
-    // ── MEMORY CACHE HIT ──
-    if (tabCache[tabName] !== undefined) {
-        TAB_RENDERERS[tabName](tabCache[tabName]);
-        return;
-    }
-
-    // ── CACHE MISS: call API exactly once ──
-    setTabState(tabName, 'loading');
-
-    try {
-        const res = await fetch(`/api/generate/${tabName}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${ACCESS_TOKEN}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ session_id: currentSessionId }),
+function updateFeatureCards(sessionId) {
+    Object.entries(FEATURE_ROUTES).forEach(([key, path]) => {
+        // Find the card by its onclick attribute pattern
+        const cards = document.querySelectorAll(`[data-feature="${key}"]`);
+        cards.forEach(card => {
+            card.onclick = () => {
+                window.location.href = `/${path}?session_id=${sessionId}`;
+            };
+            card.classList.add('feature-ready');
+            card.style.opacity = '1';
         });
-        const json = await res.json();
-
-        if (!res.ok) {
-            setTabState(tabName, 'error');
-            showPanelError(tabName, json.error || 'Generation failed. Try again.');
-            return;
-        }
-
-        // Store in JS memory — no more requests for this tab this session
-        tabCache[tabName] = json.data;
-        TAB_RENDERERS[tabName](json.data);
-        setTabState(tabName, 'done');
-
-    } catch (err) {
-        setTabState(tabName, 'error');
-        showPanelError(tabName, `Network error: ${err.message}`);
-    }
-}
-
-// ── Tab State Helpers ─────────────────────────────────────────────────────────
-
-function unlockAllTabs() {
-    VALID_TABS.forEach(tab => {
-        const btn = document.getElementById(`tab-${tab}`);
-        if (!btn) return;
-        btn.disabled = false;
-        btn.classList.remove('tab-locked');
-        btn.classList.add('tab-unlocked');
-        const icon = btn.querySelector('.tab-icon');
-        if (icon) icon.innerHTML = '<i class="fas fa-circle me-1 text-secondary" style="font-size:0.45rem;vertical-align:middle"></i>';
     });
 }
 
-function setTabState(tabName, state) {
-    const btn = document.getElementById(`tab-${tabName}`);
-    if (!btn) return;
-    const icon = btn.querySelector('.tab-icon');
+// ── Success Banner ────────────────────────────────────────────────────────────
 
-    if (state === 'loading') {
-        btn.disabled = true;
-        if (icon) icon.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>';
-    } else if (state === 'done') {
-        btn.disabled = false;
-        if (icon) icon.innerHTML = '<i class="fas fa-check-circle me-1 text-success"></i>';
-        btn.classList.add('tab-done');
-    } else if (state === 'error') {
-        btn.disabled = false;
-        if (icon) icon.innerHTML = '<i class="fas fa-exclamation-circle me-1 text-danger"></i>';
-    }
+function showSessionReady(sourceName) {
+    // Remove any existing banner
+    const existing = document.getElementById('session-ready-banner');
+    if (existing) existing.remove();
+
+    // Only show banner when a new upload just happened
+    if (!sourceName) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'session-ready-banner';
+    banner.className = 'alert alert-success mt-3 d-flex align-items-center gap-2';
+    banner.innerHTML = `
+        <i class="fas fa-check-circle"></i>
+        <span><strong>"${sourceName}"</strong> is ready! Click any learning mode on the right →</span>`;
+
+    const uploadBtn = document.getElementById('upload-btn');
+    uploadBtn.insertAdjacentElement('afterend', banner);
+
+    // Auto-dismiss after 6s
+    setTimeout(() => banner.remove(), 6000);
 }
 
-// ── Error Helpers ─────────────────────────────────────────────────────────────
+// ── Error Helper ──────────────────────────────────────────────────────────────
 
 function showUploadError(el, message) {
     el.textContent = message;
@@ -196,9 +171,4 @@ function showUploadError(el, message) {
     if (statusEl) statusEl.classList.add('d-none');
 }
 
-function showPanelError(tabName, message) {
-    const panel = document.getElementById(`panel-${tabName}`);
-    if (panel) {
-        panel.innerHTML = `<div class="alert alert-danger m-4">${message}</div>`;
-    }
-}
+

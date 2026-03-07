@@ -11,7 +11,7 @@ import jwt
 
 api = Blueprint("api", __name__)
 
-VALID_TABS = ["summary", "read_easy", "focus_mode", "step_by_step", "mind_map", "quiz"]
+VALID_TABS = ["summary", "read_easy", "focus_mode", "step_by_step", "mind_map", "quiz", "ai_detection"]
 
 # ── Supabase REST Helpers ─────────────────────────────────────────────────────
 
@@ -57,6 +57,13 @@ def db_rpc(fn, params):
     r.raise_for_status()
     # Check if content exists before parsing JSON (VOID RPCs return 204 No Content)
     return r.json() if r.content else {}
+
+
+def db_delete(table, filters):
+    params = {k: f"eq.{v}" for k, v in filters.items()}
+    r = http.delete(_url(table), headers=_headers(), params=params)
+    r.raise_for_status()
+    return True
 
 
 # ── JWT Auth Helper ───────────────────────────────────────────────────────────
@@ -189,14 +196,21 @@ def generate(tab_name: str):
 
 # ── ROUTE 3: SESSION STATUS ───────────────────────────────────────────────────
 
-@api.route("/api/session/<session_id>", methods=["GET"])
-def get_session(session_id: str):
-    """Returns session metadata and which tabs are already generated."""
+@api.route("/api/session/<session_id>", methods=["GET", "DELETE"])
+def handle_session(session_id: str):
+    """Returns session metadata or deletes a session."""
     user_id = _get_user_id()
     if not user_id:
         return jsonify({"error": "Unauthorised"}), 401
 
-    # Manually select only public columns (no source_text)
+    if request.method == "DELETE":
+        try:
+            db_delete("sessions", {"id": session_id, "user_id": user_id})
+            return jsonify({"success": True}), 200
+        except Exception as e:
+            return jsonify({"error": f"Failed to delete session: {str(e)}"}), 500
+
+    # GET method
     params = {
         "id": f"eq.{session_id}",
         "user_id": f"eq.{user_id}",
@@ -211,3 +225,25 @@ def get_session(session_id: str):
         return jsonify({"error": "Session not found"}), 404
 
     return jsonify(result[0]), 200
+
+
+# ── ROUTE 4: SESSION HISTORY ──────────────────────────────────────────────────
+
+@api.route("/api/sessions", methods=["GET"])
+def get_sessions():
+    """Returns a list of all user sessions for the history sidebar."""
+    user_id = _get_user_id()
+    if not user_id:
+        return jsonify({"error": "Unauthorised"}), 401
+
+    params = {
+        "user_id": f"eq.{user_id}",
+        "select": "id,source_name,source_type,generated_tabs,created_at",
+        "order": "created_at.desc",
+        "limit": 10,
+    }
+    r = http.get(_url("sessions"), headers=_headers(), params=params)
+    r.raise_for_status()
+    
+    return jsonify(r.json()), 200
+
