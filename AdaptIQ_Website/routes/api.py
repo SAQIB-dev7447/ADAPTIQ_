@@ -338,3 +338,35 @@ def generate_audio_read_easy():
     db_update("sessions", {"id": session_id}, {"read_easy_audio_url": audio_url})
 
     return jsonify({"audio_url": audio_url, "cached": False}), 200
+
+
+# ── ROUTE 7: HEAL MERMAID ─────────────────────────────────────────────────────
+
+@api.route("/api/heal_mermaid", methods=["POST"])
+def heal_mermaid_route():
+    user_id = _get_user_id()
+    if not user_id:
+        return jsonify({"error": "Unauthorised"}), 401
+
+    body = request.get_json()
+    if not body:
+        return jsonify({"error": "JSON body required"}), 400
+
+    session_id = body.get("session_id")
+    broken = body.get("broken")
+    error_msg = body.get("error")
+
+    if not session_id or not broken:
+        return jsonify({"error": "session_id and broken code are required"}), 400
+
+    try:
+        from services.ai import heal_mermaid
+        fixed_code = heal_mermaid(broken, error_msg or "")
+        
+        # Save healed output to database
+        db_update("sessions", {"id": session_id}, {"mind_map": {"mermaid": fixed_code, "fallback_used": True}})
+        
+        return jsonify({"mermaid": fixed_code}), 200
+    except Exception as e:
+        return jsonify({"error": f"Mermaid healing failed: {str(e)}"}), 500
+

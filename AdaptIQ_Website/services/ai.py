@@ -167,6 +167,42 @@ def generate_tab(tab_name: str, source_text: str) -> dict:
 # ── END _call_gemini ──────────────────────────────────────────────────────────
 
 
+def _clean_json_trailing_commas(json_str: str) -> str:
+    """Removes trailing commas before closing braces/brackets in a JSON string,
+    while ignoring commas that appear inside string literals.
+    """
+    in_string = False
+    escape = False
+    chars = list(json_str)
+    n = len(chars)
+    res = []
+    i = 0
+    while i < n:
+        c = chars[i]
+        if in_string:
+            if escape:
+                escape = False
+            elif c == '\\':
+                escape = True
+            elif c == '"':
+                in_string = False
+        else:
+            if c == '"':
+                in_string = True
+            elif c == ',':
+                # Peek ahead to see if the next non-whitespace character is a closing bracket or brace
+                j = i + 1
+                while j < n and chars[j].isspace():
+                    j += 1
+                if j < n and chars[j] in (']', '}'):
+                    # Skip the comma and jump to the bracket/brace
+                    i = j
+                    continue
+        res.append(c)
+        i += 1
+    return "".join(res)
+
+
 def _call_groq(prompt: str, schema, retries: int = 3) -> dict:
     last_error = None
     for attempt in range(retries + 1):
@@ -195,7 +231,8 @@ def _call_groq(prompt: str, schema, retries: int = 3) -> dict:
                 raw = raw.split("```")[1]
                 if raw.startswith("json"):
                     raw = raw[4:].strip()
-            data = json.loads(raw)
+            cleaned_raw = _clean_json_trailing_commas(raw)
+            data = json.loads(cleaned_raw)
             validated = schema(**data)
             return validated.model_dump()
         except Exception as e:
